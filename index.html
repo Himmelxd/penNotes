@@ -15,7 +15,10 @@
 </div>
 <svg id="mainS" style="height: 29cm;width:21cm;"></svg>
 
-<div id="txtEditor" contenteditable="true" style="position: absolute;background-color: white;"></div>
+<div id="txtEditorWrap" style="position: absolute;">
+    <div class="topHandle" onpointerdown="follow = txtEditorWrap;" onpointerup="txtEditor.focus();txtEditor.drop()">---</div>
+    <div id="txtEditor" contenteditable="true"></div>
+</div>
 
 <div id="rubberEl" style="height: 20px;width: 20px;position: absolute;background: #9d9d9d36;pointer-events: none;">
 </div>
@@ -38,7 +41,7 @@
         }
 
         //Spawn Text
-        if (penType == "text" && e.path[0].nodeName != 'text' && e.path[1].nodeName != 'text' && txtEditor.style.display != 'block') {
+        if (penType == "text" && e.path[0].nodeName != 'text' && e.path[1].nodeName != 'text' && txtEditorWrap.style.display != 'block') {
             text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
             text.style.fill = color;
             text.innerHTML = 'Text';
@@ -175,25 +178,43 @@
         elem = e.srcElement;
         if (elem.nodeName == 'tspan') elem = elem.parentElement;
         rec = elem.getClientRects()[0];
-        txtEditor.style.display = 'block';
-        txtEditor.style.top = rec.top + 1 + window.pageYOffset;
-        txtEditor.style.left = rec.left + window.pageXOffset;
+        txtEditorWrap.style.display = 'block';
+        txtEditorWrap.style.top = rec.top + 1 + window.pageYOffset - 20;
+        txtEditorWrap.style.left = rec.left + window.pageXOffset;
         comStyle = document.defaultView.getComputedStyle(elem);
         comFontSize = comStyle.fontSize;
         txtEditor.style.fontSize = comFontSize;
         txtEditor.style.lineHeight = comFontSize;
-        txtEditor.style.minWidth = rec.width;
-        txtEditor.style.minHeight = rec.height;
         tex = elem.innerHTML;
         tex = tex.replaceAll(/\<tspan(.*?)\>/gm, '<div>').replaceAll('</tspan>', '</div>')
         txtEditor.innerHTML = tex;
         txtEditor.focus();
+        elem.style.visibility = 'hidden';
         txtEditor.onblur = () => {
+            if(follow == txtEditorWrap) return;
             text = txtEditor.innerHTML;
             text = text.replaceAll('<div>', `<tspan x="${elem.getAttribute("x")}" dy="${comFontSize}">`);
             text = text.replaceAll('</div>', '</tspan>');
             elem.innerHTML = text;
-            txtEditor.style.display = 'none';
+            txtEditorWrap.style.display = 'none';
+            elem.style.visibility = null;
+        }
+        txtEditor.drop = () => {
+            rec = txtEditor.getClientRects()[0];
+            elem.setAttribute("x",rec.left + window.pageXOffset - 8);
+            elem.setAttribute("y",rec.top + 7 + window.pageYOffset);
+        }
+    }
+
+    follow = null;
+    document.onpointermove = move;
+    document.onpointerup = () => { follow = null };
+    function move(e) {
+        if (follow && e.pressure > 0) {
+            toFollow = follow;
+            if(toFollow == txtEditorWrap) toFollow = toFollow.querySelector('.topHandle');
+            follow.style.left = Math.floor(e.clientX + window.pageXOffset - (toFollow.getClientRects()[0].width / 2));
+            follow.style.top = Math.floor(e.clientY + window.pageYOffset - (toFollow.getClientRects()[0].height / 2));
         }
     }
 
@@ -373,5 +394,20 @@
         align-items: center;
         width: 5vh;
         place-content: center;
+    }
+
+    div#txtEditorWrap .topHandle {
+        width: calc(100% + 4px);
+        text-align: center;
+        height: 20px;
+        position: relative;
+        left: -2px;
+        background-color: #d7d7d76e;
+        border-radius: 2px 2px 0px 0px;
+        user-select: none;
+    }
+
+    div#txtEditor:focus-visible {
+        outline: 2px dashed #d7d7d76e;
     }
 </style>
