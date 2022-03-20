@@ -1,0 +1,377 @@
+<head>
+    <title>PenNotes</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+</head>
+
+<div id="noteToolbar">
+    <div class="colorOption" style="background-color: #111111" onpointerdown="setColorFromTB(this)"></div>
+    <div class="colorOption" style="background-color: red" onpointerdown="setColorFromTB(this)"></div>
+
+    <input type="range" min="1" max="20" step="1.0" value="3" onchange="thickness = this.value">
+
+    <div class="penType" onclick="penType='pen'">Pen</div>
+    <div class="penType" onclick="penType='text'">Text</div>
+    <div class="penType" onclick="penType='pressure'">Vari</div>
+</div>
+<svg id="mainS" style="height: 29cm;width:21cm;"></svg>
+
+<div id="txtEditor" contenteditable="true" style="position: absolute;background-color: white;"></div>
+
+<div id="rubberEl" style="height: 20px;width: 20px;position: absolute;background: #9d9d9d36;pointer-events: none;">
+</div>
+
+<script>
+    mainS.onpointerdown = (e) => {
+        e.stopPropagation();
+        if (e.buttons == 1 && e.pointerType == "pen" && (penType == "pen" || penType == 'pressure')) {
+            path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+            path.setAttribute("d", `M ${e.offsetX} ${e.offsetY}`);
+            lastPressure = e.pressure;
+            if (penType == 'pressure') {
+                path.style.fill = color;
+            } else {
+
+                path.style.stroke = color;
+                path.style.strokeWidth = thickness;
+            }
+            mainS.appendChild(path)
+        }
+
+        //Spawn Text
+        if (penType == "text" && e.path[0].nodeName != 'text' && e.path[1].nodeName != 'text' && txtEditor.style.display != 'block') {
+            text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+            text.style.fill = color;
+            text.innerHTML = 'Text';
+            text.setAttribute('x', Math.floor(e.clientX + window.pageXOffset));
+            text.setAttribute('y', Math.floor(e.clientY + window.pageYOffset));
+            text.style.fontSize = thickness * 6;
+            text.classList = ['small']
+            text.onclick = textEdit
+            mainS.appendChild(text);
+        }
+    }
+
+    minDiff = 1;
+    maxDiff = 10;
+
+    penWasUp = true;
+    lastP = [0, 0];
+    beforeLastP = [0, 0];
+
+    penType = 'pressure';
+
+
+    function setColorFromTB(elem) {
+        color = elem.style.backgroundColor;
+        for (const co of document.querySelectorAll('#noteToolbar .colorOption')) {
+            co.classList.remove('active');
+        }
+        elem.classList.add('active');
+    }
+
+    lastPressure = 0.1;
+    thickness = 3;
+    color = '#111111';
+    mainS.onpointermove = (e) => {
+        if (e.pointerType == 'pen' && (penType == 'pen' || penType == 'pressure')) {
+            cP = [e.offsetX, e.offsetY];
+            if (e.buttons > 30) {
+                e.stopPropagation();
+                rubberEl.style.display = 'block';
+                rubberEl.style.left = e.pageX - 10;
+                rubberEl.style.top = e.pageY - 10;
+                e2ds = getElementsInRegion(e.clientX - 12.5, e.clientY - 12.5, 25, 25);
+                for (const e2d of e2ds) {
+                    if (['line', 'path'].includes(e2d.nodeName)) {
+                        e2d.remove()
+                    }
+                }
+
+            } else if (Math.abs(cP[0] - lastP[0]) > minDiff || Math.abs(cP[1] - lastP[1]) > minDiff) {
+                e.stopPropagation();
+                if (e.buttons == 1) {
+                    path = mainS.querySelector('path:last-child');
+                    if (penType == 'pen') {
+                        path.setAttribute("d", `${path.getAttribute("d")} L${cP[0]} ${cP[1]}`);
+                    } else if (penType == 'pressure') {
+                        if (lastP.toString() == [0, 0].toString()) {
+                            lastP = cP;
+                            return;
+                        }
+                        bNV = Math.sqrt(Math.pow((cP[1] - lastP[1]), 2) + Math.pow((-cP[0] + lastP[0]), 2));
+                        eNV = [(cP[1] - lastP[1]) / bNV, (-cP[0] + lastP[0]) / bNV];
+
+                        pNV = [eNV[0] * thickness * e.pressure, eNV[1] * thickness * e.pressure];
+
+
+                        var p1 = [cP[0] - pNV[0], cP[1] - pNV[1]];
+                        var p2 = [cP[0] + pNV[0], cP[1] + pNV[1]];
+
+                        if (!path.getAttribute("d").includes('S') && !path.getAttribute("d").includes('A')) {
+                            p = path.getAttribute("d").replaceAll('M', '').replaceAll('Z', '').split(' ');
+                            p = [parseFloat(p[1]), parseFloat(p[2])]
+                            path.setAttribute("d", `M${p1[0].toFixed(2)} ${p1[1].toFixed(2)} A 1 1 0 0 1 ${(cP[0] + pNV[0]).toFixed(2)} ${(cP[1] + pNV[1]).toFixed(2)}Z`);
+                        } else {
+
+                            d = path.getAttribute("d");
+                            bPs = d.split(" ");
+                            bPs = [bPs[0].replaceAll('M', ''), bPs[1]];
+
+                            bPe = d.replaceAll("Z", "").split("L").slice(-1)[0].split(" ");
+                            bPe = [bPe[0], bPe[1]];
+
+
+                            bPe = d.replaceAll("Z", "").split("L").slice(-1)[0].split(" ");
+                            bPe2 = d.replaceAll("Z", "").split("S").slice(-1)[0].split(" ");
+                            tRV = [(bPe2[2] - p2[0]), (bPe2[3] - p2[1])];
+                            if (!tRV[0]) tRV = [0, 0];
+
+                            bLeftSideE = Math.sqrt(Math.pow(bPe[0] - bPe2[2], 2) + (Math.pow(bPe[1] - bPe2[3], 2)));
+                            bRightSideE = Math.sqrt(Math.pow(p2[0] - bPe[0], 2) + (Math.pow(p2[1] - bPe[1], 2)));
+                            console.log(bLeftSideE, bRightSideE);
+                            bShortSideE = bLeftSideE < bRightSideE ? bLeftSideE : bRightSideE;
+                            if (!bShortSideE) bShortSideE = 0;
+
+                            btRV = Math.sqrt(Math.pow(tRV[0], 2) + Math.pow(tRV[1], 2));
+                            if (btRV == 0) btRV = 0.1;
+                            teRV = [tRV[0] / btRV, tRV[1] / btRV];
+                            if (bPe.length > 3) {
+                                bPe = p2;
+                            }
+                            bEp = [(parseFloat(bPe[0]) + parseFloat(teRV[0]) * bShortSideE * 0.3).toFixed(2), (parseFloat(bPe[1]) + parseFloat(teRV[1]) * bShortSideE * 0.3).toFixed(2)];
+
+                            bPs = d.replaceAll("Z", "").split("M")[1].split(" ")
+                            bPs2 = bPs;
+                            if (d.includes("S")) {
+                                bPs2 = d.replaceAll("Z", "").split("S")[1].split(" ")
+                            }
+                            tRV = [(bPs2[2] - p1[0]), (bPs2[3] - p1[1])];
+                            if (!tRV[0]) tRV = [0, 0]
+
+                            bLeftSideS = Math.sqrt(Math.pow(bPe[0] - bPs2[2], 2) + (Math.pow(bPe[1] - bPs2[3], 2)));
+                            bRightSideS = Math.sqrt(Math.pow(p1[0] - bPs[0], 2) + (Math.pow(p1[1] - bPs[1], 2)));
+                            console.log(bLeftSideS, bRightSideS);
+                            bShortSideS = bLeftSideS < bRightSideS ? bLeftSideS : bRightSideS;
+                            if (!bShortSideS) bShortSideS = 0;
+
+                            btRV = Math.sqrt(Math.pow(tRV[0], 2) + Math.pow(tRV[1], 2));
+                            if (btRV == 0) btRV = 0.1;
+                            teRV = [tRV[0] / btRV, tRV[1] / btRV];
+                            bSn = [(bPs[0] - (teRV[0] * bShortSideS * 0.3)).toFixed(2), (bPs[1] - (teRV[1] * bShortSideS * 0.3)).toFixed(2)];
+                            path.setAttribute("d", `M${p1[0]} ${p1[1]} S${bSn.join(" ")} ${parseFloat(bPs[0]).toFixed(2)} ${parseFloat(bPs[1]).toFixed(2)} ${path.getAttribute("d").replaceAll('Z', '').split("L").slice(0, path.getAttribute("d").includes('L') ? -1 : 1).join("L").split(" ").slice(2).join(" ")} S${bEp.join(" ")} ${parseFloat(bPe[0]).toFixed(2)} ${parseFloat(bPe[1]).toFixed(2)} L${p2[0]} ${p2[1]} Z`);
+                        }
+                    }
+                    lastPressure = e.pressure;
+
+                    beforeLastP = lastP;
+                    lastP = cP;
+
+                }
+            }
+        }
+    }
+
+    function textEdit(e) {
+        elem = e.srcElement;
+        if (elem.nodeName == 'tspan') elem = elem.parentElement;
+        rec = elem.getClientRects()[0];
+        txtEditor.style.display = 'block';
+        txtEditor.style.top = rec.top + 1 + window.pageYOffset;
+        txtEditor.style.left = rec.left + window.pageXOffset;
+        comStyle = document.defaultView.getComputedStyle(elem);
+        comFontSize = comStyle.fontSize;
+        txtEditor.style.fontSize = comFontSize;
+        txtEditor.style.lineHeight = comFontSize;
+        txtEditor.style.minWidth = rec.width;
+        txtEditor.style.minHeight = rec.height;
+        tex = elem.innerHTML;
+        tex = tex.replaceAll(/\<tspan(.*?)\>/gm, '<div>').replaceAll('</tspan>', '</div>')
+        txtEditor.innerHTML = tex;
+        txtEditor.focus();
+        txtEditor.onblur = () => {
+            text = txtEditor.innerHTML;
+            text = text.replaceAll('<div>', `<tspan x="${elem.getAttribute("x")}" dy="${comFontSize}">`);
+            text = text.replaceAll('</div>', '</tspan>');
+            elem.innerHTML = text;
+            txtEditor.style.display = 'none';
+        }
+    }
+
+    lS = '';
+    mainS.onpointerup = (e) => {
+        penWasUp = true
+
+        if (penType == 'pressure') {
+            lPath = mainS.querySelector('path:last-child');
+            d = lPath.getAttribute('d');
+            if (!d.includes('L') && !d.includes('S')) {
+                p = d.replaceAll('M ', '').split(' ')
+                if (p.length == 2) {
+                    lPath.setAttribute('d', `M ${p[0]} ${p[1]} L ${p[0] - 0.1} ${p[1] - 0.1}`)
+                    lPath.style.strokeWidth = thickness * lastPressure;
+                    lPath.style.stroke = color;
+                    lPath.style.fill = '';
+                }
+            } else {
+                lPath.setAttribute("d", `${d.replaceAll('Z', '')} A 2 2 0 0 1 ${d.split(" ")[0].slice(1)} ${d.split(" ")[1]}`);
+            }
+        }
+        lastP = [0, 0]
+        rubberEl.style.display = 'none';
+        if (lS != mainS.innerHTML && fileHandle) {
+            save2File(mainS.innerHTML)
+        }
+    }
+
+
+    isPen = false;
+    document.body.addEventListener("pointerdown", function (e) {
+        if (e.pointerType === "pen") {
+            isPen = true;
+        } else {
+            isPen = false;
+        }
+    }, {
+        capture: true
+    });
+    document.body.addEventListener("touchstart", function (e) {
+        cy = e.touches[0].clientY;
+        cx = e.touches[0].clientX;
+        if (document.elementFromPoint(cx, cy) != mainS && document.elementFromPoint(cx, cy).parentElement != mainS) {
+            return;
+        };
+        if (isPen) {
+            e.preventDefault();
+        }
+    }, {
+        passive: false,
+        capture: false
+    });
+</script>
+
+<script type="text/javascript">
+    function hscrollbar() {
+        window.visualViewport.pageTop
+        var top =
+            window.pageYOffset ? window.pageYOffset :
+                document.documentElement.scrollTop ? document.documentElement.scrollTop :
+                    document.body.scrollTop;
+        document.getElementById('noteToolbar').style.top = top + window.visualViewport.offsetTop;
+        var left =
+            window.pageXOffset ? window.pageXOffset :
+                document.documentElement.scrollLeft ? document.documentElement.scrollLeft :
+                    document.body.scrollLeft;
+        document.getElementById('noteToolbar').style.left = left + window.visualViewport.offsetLeft;
+
+        document.getElementById('noteToolbar').style.transform = `scale(${1 / window.visualViewport.scale})`;
+    }
+    window.onscroll = hscrollbar;
+    window.onresize = hscrollbar;
+    window.visualViewport.onresize = hscrollbar;
+    window.visualViewport.onscroll = hscrollbar; 
+</script>
+
+<style>
+    line {
+        stroke-linecap: round;
+    }
+
+    #mainS path {
+        fill: none;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+    }
+</style>
+
+<script>
+    let fileHandle;
+    let wrStream;
+
+    async function openFile() {
+        [fileHandle] = await window.showOpenFilePicker();
+
+        if (fileHandle.kind === 'file') {
+            lS = (await (await fileHandle.getFile()).text());
+            mainS.innerHTML = lS;
+        }
+
+    }
+
+    async function save2File(data) {
+        const writableStream = await fileHandle.createWritable();
+
+        await writableStream.write(data);
+        await writableStream.close();
+        lS = data;
+    }
+
+    // window.onclick = () => {
+    //     window.onclick = null;
+    //     openFile()
+    // }
+
+
+    function getElementsInRegion(x, y, width, height) {
+
+        var elements = [],
+            cx = x,
+            cy = y,
+            curEl;
+
+        height = y + height;
+        width = x + width;
+
+        while ((cy += 5) < height) {
+            cx = x;
+            while ((cx += 5) < width) {
+                curEl = document.elementFromPoint(cx, cy);
+                if (curEl && !elements.includes(curEl)) {
+                    elements.push(curEl);
+                }
+            }
+        }
+
+        return elements;
+
+    }
+</script>
+
+<style>
+    div#noteToolbar {
+        position: absolute;
+        top: 0px;
+        width: 100%;
+        height: 5vh;
+        display: flex;
+        left: 0px;
+        box-shadow: 0px 4px 4px -4px black;
+        transform-origin: top left;
+        background: snow;
+    }
+
+    .colorOption {
+        height: 100%;
+        width: 5vh;
+        transform: scale(1.0);
+        transition: all 0.2s ease;
+    }
+
+    .colorOption:hover {
+        transform: scale(1.1)
+    }
+
+    .colorOption.active {
+        border: 3px solid #a2ff96;
+        box-sizing: border-box;
+        z-index: 1;
+    }
+
+
+    .penType {
+        border: 1px solid black;
+        display: flex;
+        align-items: center;
+        width: 5vh;
+        place-content: center;
+    }
+</style>
