@@ -201,7 +201,7 @@
     mainS.onpointerup = (e) => {
         penWasUp = true
 
-        if (penType == 'pressure') {
+        if (penType == 'pressure' && rubberEl.style.display == 'none') {
             lPath = mainS.querySelector('path:last-child');
             d = lPath.getAttribute('d');
             if (!d.includes('L') && !d.includes('S')) {
