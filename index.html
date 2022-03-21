@@ -179,7 +179,7 @@
         if (elem.nodeName == 'tspan') elem = elem.parentElement;
         rec = elem.getClientRects()[0];
         txtEditorWrap.style.display = 'block';
-        txtEditorWrap.style.top = rec.top + 1 + window.pageYOffset - 20;
+        txtEditorWrap.style.top = rec.top + 1 + window.pageYOffset - 21;
         txtEditorWrap.style.left = rec.left + window.pageXOffset;
         comStyle = document.defaultView.getComputedStyle(elem);
         comFontSize = comStyle.fontSize;
@@ -201,7 +201,7 @@
         txtEditor.drop = () => {
             rec = txtEditor.getClientRects()[0];
             elem.setAttribute("x",rec.left + window.pageXOffset - 8);
-            elem.setAttribute("y",rec.top + 7 + window.pageYOffset);
+            elem.setAttribute("y",rec.top + window.pageYOffset + parseInt(elem.style.fontSize) - ((parseInt(elem.style.fontSize)/10) + 8));
         }
     }
 
