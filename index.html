@@ -13,6 +13,10 @@
     <div class="penType" onclick="penType='text'">Text</div>
     <div class="penType" onclick="penType='pressure'">Vari</div>
 </div>
+<div id="notesBar">
+<div onclick="openDir()">Ordner öffnen</div>
+<div id="dirFilesList" path="."></div>
+</div>
 <svg id="mainS" style="height: 29cm;width:21cm;"></svg>
 
 <div id="txtEditorWrap" style="position: absolute;">
@@ -307,8 +311,10 @@
     let fileHandle;
     let wrStream;
 
-    async function openFile() {
-        [fileHandle] = await window.showOpenFilePicker();
+    async function openFile(fileHandle=null) {
+        if(fileHandle==null){
+            [fileHandle] = await window.showOpenFilePicker();
+        }
 
         if (fileHandle.kind === 'file') {
             lS = (await (await fileHandle.getFile()).text());
@@ -354,6 +360,49 @@
         return elements;
 
     }
+
+
+    dirHandle = null;
+    async function openDir(dir=null,elementTo=dirFilesList) {
+        if(!dir){
+            dirHandle = await window.showDirectoryPicker();
+            dir = dirHandle;
+        }
+        if(elementTo!=dirFilesList){
+            if(!dirFilesList.querySelector(`div.inDir[path="${elementTo.getAttribute('path')}"]`)){
+                e = document.createElement('div');
+                e.classList = 'inDir';
+                e.setAttribute('path',elementTo.getAttribute('path'))
+                elementTo.after(e)
+                console.log('first');
+            }
+            inDir = dirFilesList.querySelector(`div.inDir[path="${elementTo.getAttribute('path')}"]`);
+            inDir.innerHTML = ``;
+        } else {
+            inDir = dirFilesList;
+            elementTo.innerHTML = '';
+        }
+        for await (const entry of dir.values()) {
+            console.log(entry.kind, entry.name);
+            e = document.createElement('div');
+            e.classList = 'elem '+entry.kind;
+            e.setAttribute('name',entry.name);
+            e.innerText = entry.name
+            if(entry.kind == 'directory'){
+                e.setAttribute('path',elementTo.getAttribute('path')+'/'+entry.name);
+            }
+            e.onclick = async (event)=>{
+                target = event.target;
+                if(target.classList.contains('file')){
+                    fileHandle = await dir.getFileHandle(target.getAttribute('name'));
+                    openFile(fileHandle);
+                } else if(target.classList.contains('directory')){
+                    openDir(await dir.getDirectoryHandle(target.getAttribute('name')),target);
+                }
+            }
+            inDir.appendChild(e)
+        }
+    }
 </script>
 
 <style>
@@ -367,6 +416,7 @@
         box-shadow: 0px 4px 4px -4px black;
         transform-origin: top left;
         background: snow;
+        z-index: 99
     }
 
     .colorOption {
@@ -408,5 +458,27 @@
 
     div#txtEditor:focus-visible {
         outline: 2px dashed #d7d7d76e;
+    }
+
+    #notesBar{
+        height: 100%;
+        position: fixed;
+        left: 0px;
+        top: 5vh;
+        width: 100px;
+        z-index: 98;
+        box-shadow: 0px 0px 7px -1px black;
+    }
+
+    #dirFilesList .elem.directory:after {
+        content: '>';
+        right: 4px;
+        position: absolute;
+    }
+
+    .inDir {
+        position: relative;
+        left: 8px;
+        width: calc(100% - 8px);
     }
 </style>
