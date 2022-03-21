@@ -184,7 +184,6 @@
         comStyle = document.defaultView.getComputedStyle(elem);
         comFontSize = comStyle.fontSize;
         txtEditor.style.fontSize = comFontSize;
-        txtEditor.style.lineHeight = comFontSize;
         tex = elem.innerHTML;
         tex = tex.replaceAll(/\<tspan(.*?)\>/gm, '<div>').replaceAll('</tspan>', '</div>')
         txtEditor.innerHTML = tex;
