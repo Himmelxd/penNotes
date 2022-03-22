@@ -382,7 +382,6 @@
                 e.classList = 'inDir';
                 e.setAttribute('path',elementTo.getAttribute('path'))
                 elementTo.after(e)
-                console.log('first');
             }
             inDir = dirFilesList.querySelector(`div.inDir[path="${elementTo.getAttribute('path')}"]`);
             if(inDir.innerHTML != '' && !inDir.classList.contains('collapsed')){
