@@ -1,6 +1,7 @@
 <head>
     <title>PenNotes</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    <script src="store.js"></script>
 </head>
 
 <div id="noteToolbar">
@@ -281,13 +282,16 @@
                 document.documentElement.scrollTop ? document.documentElement.scrollTop :
                     document.body.scrollTop;
         document.getElementById('noteToolbar').style.top = top + window.visualViewport.offsetTop;
+        document.getElementById('notesBar').style.top = top + window.visualViewport.offsetTop;
         var left =
             window.pageXOffset ? window.pageXOffset :
                 document.documentElement.scrollLeft ? document.documentElement.scrollLeft :
                     document.body.scrollLeft;
         document.getElementById('noteToolbar').style.left = left + window.visualViewport.offsetLeft;
+        document.getElementById('notesBar').style.left = left + window.visualViewport.offsetLeft;
 
         document.getElementById('noteToolbar').style.transform = `scale(${1 / window.visualViewport.scale})`;
+        document.getElementById('notesBar').style.transform = `scale(${1 / window.visualViewport.scale})`;
     }
     window.onscroll = hscrollbar;
     window.onresize = hscrollbar;
@@ -365,7 +369,11 @@
     dirHandle = null;
     async function openDir(dir=null,elementTo=dirFilesList) {
         if(!dir){
-            dirHandle = await window.showDirectoryPicker();
+            oldHandle = await get('dirHandle');
+            dirHandle = await window.showDirectoryPicker({
+                startIn: oldHandle
+            });
+            set('dirHandle',dirHandle);
             dir = dirHandle;
         }
         if(elementTo!=dirFilesList){
@@ -377,10 +385,10 @@
                 console.log('first');
             }
             inDir = dirFilesList.querySelector(`div.inDir[path="${elementTo.getAttribute('path')}"]`);
-            if(inDir.innerHTML != '' && inDir.style.display == 'block'){
-                inDir.style.display = 'none';
+            if(inDir.innerHTML != '' && !inDir.classList.contains('collapsed')){
+                inDir.classList.add('collapsed');
             } else {
-                inDir.style.display = 'block';
+                inDir.classList.remove('collapsed');
             }
             inDir.innerHTML = ``;
         } else {
@@ -406,6 +414,14 @@
                 }
             }
             inDir.appendChild(e)
+        }
+
+        for (let p = 10; p < window.innerWidth; p+=2) {
+            notesBar.style.width = p;
+            if(dirFilesList.scrollWidth <= dirFilesList.clientWidth){
+                notesBar.style.width = p+20;
+                break;
+            }
         }
     }
 </script>
@@ -467,12 +483,16 @@
 
     #notesBar{
         height: 100%;
-        position: fixed;
+        position: absolute;
         left: 0px;
-        top: 5vh;
+        top: 0px;
+        padding-top: 5vh;
         width: 100px;
         z-index: 98;
         box-shadow: 0px 0px 7px -1px black;
+        transform-origin: top left;
+        background-color: snow;
+        overflow-y: auto;
     }
 
     #dirFilesList .elem.directory:after {
@@ -481,9 +501,34 @@
         position: absolute;
     }
 
+    .elem.directory, .elem.file {
+        white-space: nowrap;
+    }
+
+    .elem {
+        height: 1.4cm;
+        padding-left: 10px;
+        display: flex;
+        align-items: center;
+        border-bottom: 2px solid #e0e0e0;
+        border-left: 2px solid #e0e0e0;
+        padding-right: 110px;
+    }
+
+    div#dirFilesList {
+        display: flex;
+        flex-direction: column;
+        justify-content: flex-start;
+    }
+
     .inDir {
         position: relative;
         left: 8px;
         width: calc(100% - 8px);
+        display: block;
+    }
+    
+    .inDir.collapsed{
+        display: none;
     }
 </style>
