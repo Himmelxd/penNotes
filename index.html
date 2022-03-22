@@ -377,6 +377,11 @@
                 console.log('first');
             }
             inDir = dirFilesList.querySelector(`div.inDir[path="${elementTo.getAttribute('path')}"]`);
+            if(inDir.innerHTML != '' && inDir.style.display == 'block'){
+                inDir.style.display = 'none';
+            } else {
+                inDir.style.display = 'block';
+            }
             inDir.innerHTML = ``;
         } else {
             inDir = dirFilesList;
