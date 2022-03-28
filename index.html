@@ -321,9 +321,17 @@
     window.onresize = hscrollbar;
     window.visualViewport.onresize = hscrollbar;
     window.visualViewport.onscroll = hscrollbar; 
+
+    mainS.style.width = window.innerWidth;
+    mainS.style.height = window.innerHeight;
+
+    inflatePlane = true;
 </script>
 
 <style>
+    body {
+        margin: 0px;
+    }
     line {
         stroke-linecap: round;
     }
@@ -347,6 +355,24 @@
         if (fileHandle.kind === 'file') {
             lS = (await (await fileHandle.getFile()).text());
             mainS.innerHTML = lS;
+
+            maxX = window.innerWidth;
+            maxY = window.innerHeight;
+            for (const child of mainS.children) {
+                rec = child.getClientRects()[0];
+                if(rec){
+                    right = rec.right;
+                    if(maxX < right){
+                        maxX = right;
+                    }
+                    bottom = rec.bottom;
+                    if(maxY < bottom){
+                        maxY = bottom;
+                    }
+                }
+            }
+            mainS.style.height = maxY;
+            mainS.style.width = maxX;
         }
 
     }
