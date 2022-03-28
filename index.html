@@ -24,7 +24,9 @@
 </div>
 <div id="notesBar">
 <div onclick="openDir()">Ordner öffnen</div>
-<div id="dirFilesList" path="."></div>
+<div id="dirFilesList" path=".">
+    <div onclick="openDir(null,dirFilesList,true)">Letzten öffnen</div>
+</div>
 </div>
 <svg id="mainS" style="height: 29cm;width:21cm;"></svg>
 
@@ -389,13 +391,18 @@
 
 
     dirHandle = null;
-    async function openDir(dir=null,elementTo=dirFilesList) {
+    async function openDir(dir=null,elementTo=dirFilesList,openRecent=false) {
         if(!dir){
             oldHandle = await get('dirHandle');
-            dirHandle = await window.showDirectoryPicker({
-                startIn: oldHandle
-            });
-            set('dirHandle',dirHandle);
+            if(openRecent && oldHandle){
+                dirHandle = oldHandle;
+                await dirHandle.requestPermission()
+            } else {
+                dirHandle = await window.showDirectoryPicker({
+                    startIn: oldHandle
+                });
+                set('dirHandle',dirHandle);
+            }
             dir = dirHandle;
         }
         if(elementTo!=dirFilesList){
