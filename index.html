@@ -5,6 +5,14 @@
 </head>
 
 <div id="noteToolbar">
+    <div id="menuButton" class="opened" onclick="notesBar.classList.toggle('hide');this.classList = notesBar.classList.contains('hide')?'closed':'opened'">
+        <svg viewBox="0 0 24 24" class="open">
+            <path fill="currentColor" d="M3,6H21V8H3V6M3,11H21V13H3V11M3,16H21V18H3V16Z" />
+        </svg>
+        <svg viewBox="0 0 24 24" class="close">
+            <path fill="currentColor" d="M5,13L9,17L7.6,18.42L1.18,12L7.6,5.58L9,7L5,11H21V13H5M21,6V8H11V6H21M21,16V18H11V16H21Z" />
+        </svg>
+    </div>
     <div class="colorOption" style="background-color: #111111" onpointerdown="setColorFromTB(this)"></div>
     <div class="colorOption" style="background-color: red" onpointerdown="setColorFromTB(this)"></div>
 
@@ -291,7 +299,21 @@
         document.getElementById('notesBar').style.left = left + window.visualViewport.offsetLeft;
 
         document.getElementById('noteToolbar').style.transform = `scale(${1 / window.visualViewport.scale})`;
-        document.getElementById('notesBar').style.transform = `scale(${1 / window.visualViewport.scale})`;
+        document.getElementById('notesBar').style.transition = 'none';
+        document.getElementById('notesBar').style.setProperty("--scale", 1 / window.visualViewport.scale);
+        setTimeout(() => {
+            document.getElementById('notesBar').style.transition = null;
+        }, 100);
+
+
+        if(inflatePlane){
+            if(mainS.getBoundingClientRect().right-window.innerWidth < 0){
+                mainS.style.width = parseInt(mainS.style.width) - (mainS.getBoundingClientRect().right-window.innerWidth);
+            }
+            if(mainS.getBoundingClientRect().bottom-window.innerHeight < 0){
+                mainS.style.height = parseInt(mainS.style.height) - (mainS.getBoundingClientRect().bottom-window.innerHeight);
+            }
+        }
     }
     window.onscroll = hscrollbar;
     window.onresize = hscrollbar;
@@ -481,7 +503,10 @@
     }
 
     #notesBar{
-        height: 100%;
+        transform: scale(var(--scale)) translate(var(--translate));
+        --translate: 0%;
+        --scale: 1;
+        height: calc(100% - 5vh);
         position: absolute;
         left: 0px;
         top: 0px;
@@ -492,6 +517,13 @@
         transform-origin: top left;
         background-color: snow;
         overflow-y: auto;
+        visibility: visible;
+        transition: transform 0.2s ease, visibility 0.2s ease;
+    }
+
+    #notesBar.hide{
+        --translate: calc(-100% - 20px);
+        visibility: hidden;
     }
 
     #dirFilesList .elem.directory:after {
@@ -518,6 +550,7 @@
         display: flex;
         flex-direction: column;
         justify-content: flex-start;
+        overflow-x: auto;
     }
 
     .inDir {
@@ -529,5 +562,31 @@
     
     .inDir.collapsed{
         display: none;
+    }
+
+    #menuButton{
+        position: relative;
+        width: 5vh;
+        height: 100%;
+    }
+    
+    div#menuButton svg {
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        opacity: 1;
+        transition: all 0.2s ease;
+        pointer-events: all;
+        transform: scale(1);
+    }
+    #menuButton.opened svg.open{
+        pointer-events: none;
+        transform: scaleX(0.5);
+        transform-origin: right center;
+        opacity: 0;
+    }
+    #menuButton.closed svg.close{
+        pointer-events: none;
+        opacity: 0;
     }
 </style>
