@@ -417,7 +417,6 @@
             elementTo.innerHTML = '';
         }
         for await (const entry of dir.values()) {
-            console.log(entry.kind, entry.name);
             e = document.createElement('div');
             e.classList = 'elem '+entry.kind;
             e.setAttribute('name',entry.name);
