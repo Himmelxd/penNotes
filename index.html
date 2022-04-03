@@ -356,6 +356,10 @@
             lS = (await (await fileHandle.getFile()).text());
             mainS.innerHTML = lS;
 
+            for (const txt of mainS.querySelectorAll('text')) {
+                txt.onclick = textEdit;
+            }
+
             maxX = window.innerWidth;
             maxY = window.innerHeight;
             for (const child of mainS.children) {
