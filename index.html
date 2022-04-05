@@ -439,7 +439,7 @@
 
 
     dirHandle = null;
-    async function openDir(dir=null,elementTo=dirFilesList,openRecent=false) {
+    async function openDir(dir=null,elementTo=dirFilesList,openRecent=false,keepOpen=false) {
         if(!dir){
             oldHandle = await get('dirHandle');
             if(openRecent && oldHandle){
@@ -461,21 +461,23 @@
                 elementTo.after(e)
             }
             inDir = dirFilesList.querySelector(`div.inDir[path="${elementTo.getAttribute('path')}"]`);
-            if(inDir.innerHTML != '' && !inDir.classList.contains('collapsed')){
+            if(inDir.innerHTML != '' && !inDir.classList.contains('collapsed') && !keepOpen){
                 inDir.classList.add('collapsed');
             } else {
                 inDir.classList.remove('collapsed');
             }
-            inDir.innerHTML = ``;
+            inDir.dirHandle = dir;
+            inDir.innerHTML  = '';
         } else {
             inDir = dirFilesList;
             elementTo.innerHTML = '';
         }
         for await (const entry of dir.values()) {
+            if(entry.kind == 'file' && entry.name.slice(-6).toLowerCase() != '.pnote') continue;
             e = document.createElement('div');
             e.classList = 'elem '+entry.kind;
             e.setAttribute('name',entry.name);
-            e.innerText = entry.name
+            e.innerText = entry.kind == 'file'?entry.name.slice(0,-6):entry.name;
             if(entry.kind == 'directory'){
                 e.setAttribute('path',elementTo.getAttribute('path')+'/'+entry.name);
             }
@@ -490,13 +492,43 @@
             }
             inDir.appendChild(e)
         }
-
+        adder = document.createElement('div');
+        adder.classList = 'adder';
+        adder.innerHTML = `<div onclick="this.nextElementSibling.classList.toggle('hide');">+</div>
+        <div class="hide">
+            <input type="text" placeholder="Name">
+            <svg onclick="inp = this.previousElementSibling;if(inp.value){newElementInDir(${elementTo!=dirFilesList?'this.parentElement.parentElement.parentElement.dirHandle':'dirHandle'},'dir',inp.value,${elementTo!=dirFilesList?'this.parentElement.parentElement.parentElement.previousElementSibling':'dirFilesList'});inp.value=''}" style="width:24px;height:24px" viewBox="0 0 24 24"><path fill="currentColor" d="M10,4L12,6H20A2,2 0 0,1 22,8V18A2,2 0 0,1 20,20H4C2.89,20 2,19.1 2,18V6C2,4.89 2.89,4 4,4H10M15,9V12H12V14H15V17H17V14H20V12H17V9H15Z" /></svg>
+            <svg onclick="inp = this.previousElementSibling.previousElementSibling;if(inp.value){newElementInDir(${elementTo!=dirFilesList?'this.parentElement.parentElement.parentElement.dirHandle':'dirHandle'},'note',inp.value,${elementTo!=dirFilesList?'this.parentElement.parentElement.parentElement.previousElementSibling':'dirFilesList'});inp.value=''}" style="width:24px;height:24px" viewBox="0 0 24 24"><path fill="currentColor" d="M14 2H6C4.89 2 4 2.89 4 4V20C4 21.11 4.89 22 6 22H13.81C13.28 21.09 13 20.05 13 19C13 15.69 15.69 13 19 13C19.34 13 19.67 13.03 20 13.08V8L14 2M13 9V3.5L18.5 9H13M23 20H20V23H18V20H15V18H18V15H20V18H23V20Z" /></svg>
+        </div>`;
+        inDir.appendChild(adder);
+        
         for (let p = 10; p < window.innerWidth; p+=2) {
             notesBar.style.width = p;
             if(dirFilesList.scrollWidth <= dirFilesList.clientWidth){
                 notesBar.style.width = p+20;
                 break;
             }
+        }
+    }
+
+    async function newElementInDir(dir,type,name,refresh=null) {
+        switch (type) {
+            case 'dir':
+                dir.getDirectoryHandle(name, {
+                    create: true,
+                });
+                break;
+            case 'note':
+                const newFileHandle = await dir.getFileHandle(name+'.pnote', { create: true });
+                fileHandle = newFileHandle;
+                openFile(newFileHandle);
+                break;
+        
+            default:
+                break;
+        }
+        if(refresh){
+            openDir(dir,refresh,false,true);
         }
     }
 
@@ -698,7 +730,7 @@
         transform: scale(var(--scale)) translate(var(--translate));
         --translate: 0%;
         --scale: 1;
-        height: 100%;
+        height: calc(100% - (5vh * var(--scale)));
         position: absolute;
         left: 0px;
         top: 0px;
@@ -852,6 +884,34 @@
         background-color: #3a3a3a9f;
         border-radius: 10px;
     }
+
+    .adder input.hide {
+        display: none;
+    }
+
+    .adder input[type="text"] {
+        width: 100%;
+        height: 100%;
+    }
+
+    .adder {
+        display: flex;
+        align-items: center;
+        gap: 3px;
+    }
+
+    
+    .adder div {
+        height: 2rem;
+        font-size: 1.5rem;
+        display: flex;
+        align-items: center;
+    }
+
+    .adder div.hide {
+        display: none;
+    }
+
 </style>
 
 </html>
