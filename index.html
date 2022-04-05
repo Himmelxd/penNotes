@@ -15,15 +15,41 @@
             <path fill="currentColor" d="M5,13L9,17L7.6,18.42L1.18,12L7.6,5.58L9,7L5,11H21V13H5M21,6V8H11V6H21M21,16V18H11V16H21Z" />
         </svg>
     </div>
-    <div class="colorOption" style="background-color: #111111" onpointerdown="setColorFromTB(this)"></div>
-    <div class="colorOption" style="background-color: red" onpointerdown="setColorFromTB(this)"></div>
 
-    <input type="range" min="1" max="20" step="1.0" value="3" onchange="thickness = this.value">
+    <div id="penList">
+        
+    </div>
 
-    <div class="penType" onclick="penType='pen'">Pen</div>
-    <div class="penType" onclick="penType='text'">Text</div>
-    <div class="penType" onclick="penType='pressure'">Vari</div>
+    
 </div>
+
+<div id="penEditor" class="hide">
+<div class="types">
+    <div class="penType" type="pen" onclick="setCurrentPenType(this.getAttribute('type'))">
+        <svg style="width:24px;height:24px" viewBox="0 0 24 24">
+            <path fill="currentColor" d="M9.75 20.85C11.53 20.15 11.14 18.22 10.24 17C9.35 15.75 8.12 14.89 6.88 14.06C6 13.5 5.19 12.8 4.54 12C4.26 11.67 3.69 11.06 4.27 10.94C4.86 10.82 5.88 11.4 6.4 11.62C7.31 12 8.21 12.44 9.05 12.96L10.06 11.26C8.5 10.23 6.5 9.32 4.64 9.05C3.58 8.89 2.46 9.11 2.1 10.26C1.78 11.25 2.29 12.25 2.87 13.03C4.24 14.86 6.37 15.74 7.96 17.32C8.3 17.65 8.71 18.04 8.91 18.5C9.12 18.94 9.07 18.97 8.6 18.97C7.36 18.97 5.81 18 4.8 17.36L3.79 19.06C5.32 20 7.88 21.47 9.75 20.85M18.96 7.33L13.29 13H11V10.71L16.67 5.03L18.96 7.33M22.36 6.55C22.35 6.85 22.04 7.16 21.72 7.47L19.2 10L18.33 9.13L20.93 6.54L20.34 5.95L19.67 6.62L17.38 4.33L19.53 2.18C19.77 1.94 20.16 1.94 20.39 2.18L21.82 3.61C22.06 3.83 22.06 4.23 21.82 4.47C21.61 4.68 21.41 4.88 21.41 5.08C21.39 5.28 21.59 5.5 21.79 5.67C22.08 5.97 22.37 6.25 22.36 6.55Z" />
+        </svg>
+    </div>
+    <div class="penType" type="text" onclick="setCurrentPenType(this.getAttribute('type'))">
+        <svg style="width:24px;height:24px" viewBox="0 0 24 24">
+            <path fill="currentColor" d="M18.5,4L19.66,8.35L18.7,8.61C18.25,7.74 17.79,6.87 17.26,6.43C16.73,6 16.11,6 15.5,6H13V16.5C13,17 13,17.5 13.33,17.75C13.67,18 14.33,18 15,18V19H9V18C9.67,18 10.33,18 10.67,17.75C11,17.5 11,17 11,16.5V6H8.5C7.89,6 7.27,6 6.74,6.43C6.21,6.87 5.75,7.74 5.3,8.61L4.34,8.35L5.5,4H18.5Z" />
+        </svg>
+    </div>
+    <div class="penType" type="pressure" onclick="setCurrentPenType(this.getAttribute('type'))">
+        <svg style="width:24px;height:24px" viewBox="0 0 24 24">
+            <path fill="currentColor" d="M 9.75 20.85 C 11.53 20.15 10.915 18.665 9.721 17.268 C 8.392 15.893 7.828 15.195 6.634 14.113 C 6 13.5 5.19 12.8 4.54 12 C 4.26 11.67 3.69 11.06 4.27 10.94 C 4.86 10.82 5.88 11.4 6.4 11.62 C 7.31 12 8.031 12.739 8.955 13.325 L 10.239 11.027 C 8.5 10.23 6.5 9.32 4.64 9.05 C 3.58 8.89 2.46 9.11 2.1 10.26 C 1.78 11.25 2.083 12.243 2.87 13.03 C 4.809 14.722 6.003 15.713 7.242 16.614 C 8.256 17.471 8.527 17.628 9.203 18.192 C 9.788 18.665 10.104 19.318 9.608 19.634 C 8.617 20.062 3.975 17.471 4 18 L 4 18 C 4.02 18.665 7.88 21.47 9.75 20.85 M 18.96 7.33 L 13.29 13 H 11 V 10.71 L 16.67 5.03 L 18.96 7.33 M 22.36 6.55 C 22.35 6.85 22.04 7.16 21.72 7.47 L 19.2 10 L 18.33 9.13 L 20.93 6.54 L 20.34 5.95 L 19.67 6.62 L 17.38 4.33 L 19.53 2.18 C 19.77 1.94 20.16 1.94 20.39 2.18 L 21.82 3.61 C 22.06 3.83 22.06 4.23 21.82 4.47 C 21.61 4.68 21.41 4.88 21.41 5.08 C 21.39 5.28 21.59 5.5 21.79 5.67 C 22.08 5.97 22.37 6.25 22.36 6.55 Z" />
+        </svg>
+    </div>
+</div>
+<input id="penThicknessSlide" type="range" min="1" max="20" step="1.0" value="3" oninput="setPenElement(currentPen,currentPen.getAttribute('color'),this.value,currentPen.getAttribute('type'));">
+<input id="penColorPick" type="color" oninput="setPenElement(currentPen,this.value,currentPen.getAttribute('size'),currentPen.getAttribute('type'));">
+<div onclick="currentPen.remove();penList.querySelector('.pen').click();exportPens();">
+    <svg style="width:24px;height:24px" viewBox="0 0 24 24">
+        <path fill="currentColor" d="M19,4H15.5L14.5,3H9.5L8.5,4H5V6H19M6,19A2,2 0 0,0 8,21H16A2,2 0 0,0 18,19V7H6V19Z" />
+    </svg>
+</div>
+</div>
+
 <div id="notesBar">
 <div onclick="openDir()">Ordner öffnen</div>
 <div id="dirFilesList" path=".">
@@ -43,28 +69,28 @@
 <script>
     mainS.onpointerdown = (e) => {
         e.stopPropagation();
-        if (e.buttons == 1 && e.pointerType == "pen" && (penType == "pen" || penType == 'pressure')) {
+        if (e.buttons == 1 && e.pointerType == "pen" && (currentPen.getAttribute('type') == "pen" || currentPen.getAttribute('type') == 'pressure')) {
             path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
             path.setAttribute("d", `M ${e.offsetX} ${e.offsetY}`);
             lastPressure = e.pressure;
-            if (penType == 'pressure') {
-                path.style.fill = color;
+            if (currentPen.getAttribute('type') == 'pressure') {
+                path.style.fill = currentPen.getAttribute('color');
             } else {
 
-                path.style.stroke = color;
-                path.style.strokeWidth = thickness;
+                path.style.stroke = currentPen.getAttribute('color');
+                path.style.strokeWidth = currentPen.getAttribute('size');
             }
             mainS.appendChild(path)
         }
 
         //Spawn Text
-        if (penType == "text" && e.path[0].nodeName != 'text' && e.path[1].nodeName != 'text' && txtEditorWrap.style.display != 'block') {
+        if (currentPen.getAttribute('type') == "text" && e.path[0].nodeName != 'text' && e.path[1].nodeName != 'text' && txtEditorWrap.style.display != 'block') {
             text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
-            text.style.fill = color;
+            text.style.fill = currentPen.getAttribute('color');
             text.innerHTML = 'Text';
             text.setAttribute('x', Math.floor(e.clientX + window.pageXOffset));
             text.setAttribute('y', Math.floor(e.clientY + window.pageYOffset));
-            text.style.fontSize = thickness * 6;
+            text.style.fontSize = currentPen.getAttribute('size') * 6;
             text.classList = ['small']
             text.onclick = textEdit
             mainS.appendChild(text);
@@ -78,22 +104,9 @@
     lastP = [0, 0];
     beforeLastP = [0, 0];
 
-    penType = 'pressure';
-
-
-    function setColorFromTB(elem) {
-        color = elem.style.backgroundColor;
-        for (const co of document.querySelectorAll('#noteToolbar .colorOption')) {
-            co.classList.remove('active');
-        }
-        elem.classList.add('active');
-    }
-
     lastPressure = 0.1;
-    thickness = 3;
-    color = '#111111';
     mainS.onpointermove = (e) => {
-        if (e.pointerType == 'pen' && (penType == 'pen' || penType == 'pressure')) {
+        if (e.pointerType == 'pen' && (currentPen.getAttribute('type') == 'pen' || currentPen.getAttribute('type') == 'pressure')) {
             cP = [e.offsetX, e.offsetY];
             if (e.buttons > 30) {
                 e.stopPropagation();
@@ -111,9 +124,9 @@
                 e.stopPropagation();
                 if (e.buttons == 1) {
                     path = mainS.querySelector('path:last-child');
-                    if (penType == 'pen') {
+                    if (currentPen.getAttribute('type') == 'pen') {
                         path.setAttribute("d", `${path.getAttribute("d")} L${cP[0]} ${cP[1]}`);
-                    } else if (penType == 'pressure') {
+                    } else if (currentPen.getAttribute('type') == 'pressure') {
                         if (lastP.toString() == [0, 0].toString()) {
                             lastP = cP;
                             return;
@@ -121,7 +134,7 @@
                         bNV = Math.sqrt(Math.pow((cP[1] - lastP[1]), 2) + Math.pow((-cP[0] + lastP[0]), 2));
                         eNV = [(cP[1] - lastP[1]) / bNV, (-cP[0] + lastP[0]) / bNV];
 
-                        pNV = [eNV[0] * thickness * e.pressure, eNV[1] * thickness * e.pressure];
+                        pNV = [eNV[0] * currentPen.getAttribute('size') * e.pressure, eNV[1] * currentPen.getAttribute('size') * e.pressure];
 
 
                         var p1 = [cP[0] - pNV[0], cP[1] - pNV[1]];
@@ -238,15 +251,15 @@
     mainS.onpointerup = (e) => {
         penWasUp = true
 
-        if (penType == 'pressure' && rubberEl.style.display == 'none') {
+        if (currentPen.getAttribute('type') == 'pressure' && rubberEl.style.display == 'none') {
             lPath = mainS.querySelector('path:last-child');
             d = lPath.getAttribute('d');
             if (!d.includes('L') && !d.includes('S')) {
                 p = d.replaceAll('M ', '').split(' ')
                 if (p.length == 2) {
                     lPath.setAttribute('d', `M ${p[0]} ${p[1]} L ${p[0] - 0.1} ${p[1] - 0.1}`)
-                    lPath.style.strokeWidth = thickness * lastPressure;
-                    lPath.style.stroke = color;
+                    lPath.style.strokeWidth = currentPen.getAttribute('size') * lastPressure;
+                    lPath.style.stroke = currentPen.getAttribute('color');
                     lPath.style.fill = '';
                 }
             } else {
@@ -293,16 +306,19 @@
             window.pageYOffset ? window.pageYOffset :
                 document.documentElement.scrollTop ? document.documentElement.scrollTop :
                     document.body.scrollTop;
-        document.getElementById('noteToolbar').style.top = top + window.visualViewport.offsetTop;
+        document.getElementById('noteToolbar').style.top = top + window.visualViewport.offsetTop - 1;
+        document.getElementById('penEditor').style.top = top + window.visualViewport.offsetTop + window.visualViewport.height*0.06;
         document.getElementById('notesBar').style.top = top + window.visualViewport.offsetTop;
         var left =
             window.pageXOffset ? window.pageXOffset :
                 document.documentElement.scrollLeft ? document.documentElement.scrollLeft :
                     document.body.scrollLeft;
         document.getElementById('noteToolbar').style.left = left + window.visualViewport.offsetLeft;
-        document.getElementById('notesBar').style.left = left + window.visualViewport.offsetLeft;
+        document.getElementById('penEditor').style.left = left + window.visualViewport.offsetLeft + (penEditor.getAttribute("leftOffToPen")*1 / window.visualViewport.scale);
+        document.getElementById('notesBar').style.left = left + window.visualViewport.offsetLeft - 1;
 
         document.getElementById('noteToolbar').style.transform = `scale(${1 / window.visualViewport.scale})`;
+        document.getElementById('penEditor').style.transform = `scale(${1 / window.visualViewport.scale})`;
         document.getElementById('notesBar').style.transition = 'none';
         document.getElementById('notesBar').style.setProperty("--scale", 1 / window.visualViewport.scale);
         setTimeout(() => {
@@ -483,9 +499,139 @@
             }
         }
     }
+
+    function setCurrentPenType(type) {
+        setPenElement(currentPen,currentPen.getAttribute('color'),currentPen.getAttribute('size'),type);
+        penEditor.querySelector(`.types .penType[type=${type}]`).classList.add('active')
+        for (const typeEl of penEditor.querySelectorAll('.types .penType')) {
+            if(typeEl.getAttribute('type')!=type)typeEl.classList.remove('active');
+        }
+    }
+
+    currentPen = null;
+
+    function setPenElement(element,color,size,type) {
+        svgD = '';
+        switch (type) {
+            case 'pen':
+                svgD = `M9.75 20.85C11.53 20.15 11.14 18.22 10.24 17C9.35 15.75 8.12 14.89 6.88 14.06C6 13.5 5.19 12.8 4.54 12C4.26 11.67 3.69 11.06 4.27 10.94C4.86 10.82 5.88 11.4 6.4 11.62C7.31 12 8.21 12.44 9.05 12.96L10.06 11.26C8.5 10.23 6.5 9.32 4.64 9.05C3.58 8.89 2.46 9.11 2.1 10.26C1.78 11.25 2.29 12.25 2.87 13.03C4.24 14.86 6.37 15.74 7.96 17.32C8.3 17.65 8.71 18.04 8.91 18.5C9.12 18.94 9.07 18.97 8.6 18.97C7.36 18.97 5.81 18 4.8 17.36L3.79 19.06C5.32 20 7.88 21.47 9.75 20.85M18.96 7.33L13.29 13H11V10.71L16.67 5.03L18.96 7.33M22.36 6.55C22.35 6.85 22.04 7.16 21.72 7.47L19.2 10L18.33 9.13L20.93 6.54L20.34 5.95L19.67 6.62L17.38 4.33L19.53 2.18C19.77 1.94 20.16 1.94 20.39 2.18L21.82 3.61C22.06 3.83 22.06 4.23 21.82 4.47C21.61 4.68 21.41 4.88 21.41 5.08C21.39 5.28 21.59 5.5 21.79 5.67C22.08 5.97 22.37 6.25 22.36 6.55Z`;
+                break;
+            case 'text':
+                svgD = `M18.5,4L19.66,8.35L18.7,8.61C18.25,7.74 17.79,6.87 17.26,6.43C16.73,6 16.11,6 15.5,6H13V16.5C13,17 13,17.5 13.33,17.75C13.67,18 14.33,18 15,18V19H9V18C9.67,18 10.33,18 10.67,17.75C11,17.5 11,17 11,16.5V6H8.5C7.89,6 7.27,6 6.74,6.43C6.21,6.87 5.75,7.74 5.3,8.61L4.34,8.35L5.5,4H18.5Z`
+                break;
+            case 'pressure':
+                svgD = `M 9.75 20.85 C 11.53 20.15 10.915 18.665 9.721 17.268 C 8.392 15.893 7.828 15.195 6.634 14.113 C 6 13.5 5.19 12.8 4.54 12 C 4.26 11.67 3.69 11.06 4.27 10.94 C 4.86 10.82 5.88 11.4 6.4 11.62 C 7.31 12 8.031 12.739 8.955 13.325 L 10.239 11.027 C 8.5 10.23 6.5 9.32 4.64 9.05 C 3.58 8.89 2.46 9.11 2.1 10.26 C 1.78 11.25 2.083 12.243 2.87 13.03 C 4.809 14.722 6.003 15.713 7.242 16.614 C 8.256 17.471 8.527 17.628 9.203 18.192 C 9.788 18.665 10.104 19.318 9.608 19.634 C 8.617 20.062 3.975 17.471 4 18 L 4 18 C 4.02 18.665 7.88 21.47 9.75 20.85 M 18.96 7.33 L 13.29 13 H 11 V 10.71 L 16.67 5.03 L 18.96 7.33 M 22.36 6.55 C 22.35 6.85 22.04 7.16 21.72 7.47 L 19.2 10 L 18.33 9.13 L 20.93 6.54 L 20.34 5.95 L 19.67 6.62 L 17.38 4.33 L 19.53 2.18 C 19.77 1.94 20.16 1.94 20.39 2.18 L 21.82 3.61 C 22.06 3.83 22.06 4.23 21.82 4.47 C 21.61 4.68 21.41 4.88 21.41 5.08 C 21.39 5.28 21.59 5.5 21.79 5.67 C 22.08 5.97 22.37 6.25 22.36 6.55 Z`;
+                break;
+        
+            default:
+                break;
+        }
+        element.innerHTML = `<svg style="width:24px;height:24px" viewBox="0 0 24 24"><path fill="currentColor" d="${svgD}" /></svg>`;
+        element.style.color = color;
+        element.style.transform = `scale(${1+((size-3)/20)})`;
+        element.setAttribute('color',color);
+        element.setAttribute('size',size);
+        element.setAttribute('type',type);
+        exportPens();
+    }
+
+
+    window.onload = async () => {
+        pens = await get('penList');
+        if(pens){
+            makePenList(pens);
+            exportPens();
+        } else {
+            makePenList([{
+                color: '#FF0000',
+                size: '3',
+                type: 'pen',
+            },
+            {
+                color: '#FFFF00',
+                size: '5',
+                type: 'pressure',
+            }]);
+            exportPens();
+        }
+    }
+    function makePenList(list) {
+        penList.innerHTML = '';
+        for (const pen of list) {
+            e = document.createElement('div');
+            e.classList = 'pen';
+            setPenElement(e,pen.color,pen.size,pen.type);
+            e.setAttribute('onclick',"setPenByElem(this)");
+            penList.appendChild(e);
+        }
+        e = document.createElement('div');
+        e.innerHTML = `<svg style="width:24px;height:24px" viewBox="0 0 24 24"><path fill="currentColor" d="M19,13H13V19H11V13H5V11H11V5H13V11H19V13Z" /></svg>`;
+        e.style.color = 'darkgreen';
+        e.onclick = addPen;
+        penList.appendChild(e);
+    }
+
+    function setPenByElem(penElem) {
+        if(penEditor.classList.contains('hide')){
+            if(currentPen == penElem){
+                penEditor.classList.remove('hide');
+                penColorPick.value = currentPen.getAttribute('color');
+                penThicknessSlide.value = currentPen.getAttribute('size');
+                for (const type of penEditor.querySelectorAll('.types .penType')) {
+                    typeName = type.getAttribute('type');
+                    if(typeName == currentPen.getAttribute('type')){
+                        type.classList.add('active');
+                    } else {
+                        type.classList.remove('active');
+                    }
+                    
+                }
+                penEditor.setAttribute("leftOffToPen", (penElem.getBoundingClientRect().left-noteToolbar.getBoundingClientRect().left)*window.visualViewport.scale);
+                hscrollbar();
+            }
+        } else {
+            penEditor.classList.add('hide');
+        }
+        for (const pen of penList.querySelectorAll('.pen')) {
+            if(pen!=penElem) pen.classList.remove('active');
+        }
+        penElem.classList.add('active');
+        currentPen = penElem;
+    }
+
+    function exportPens() {
+        pens = [];
+        for (const pen of penList.querySelectorAll('.pen')) {
+            pens.push({
+                color:pen.getAttribute('color'),
+                size:pen.getAttribute('size'),
+                type:pen.getAttribute('type')
+            });
+        }
+        set('penList',pens);
+    }
+
+    async function addPen() {
+        pens = await get('penList');
+        console.log(pens);
+        pens.push({
+            color: '#444444',
+            size: '3',
+            type: 'pen',
+        });
+        makePenList(pens);
+        exportPens();
+    }
 </script>
 
 <style>
+
+    @media (prefers-color-scheme: dark) {
+        body{
+            background: #1c1c1c;
+        }
+    }
+
     div#noteToolbar {
         position: absolute;
         top: 0px;
@@ -495,8 +641,12 @@
         left: 0px;
         box-shadow: 0px 4px 4px -4px black;
         transform-origin: top left;
-        background: snow;
-        z-index: 99
+        padding-top: 2px;
+        z-index: 99;
+        background: rgba( 255, 255, 255, 0.25 );
+        box-shadow: 0 8px 32px 0 rgb(31 38 135 / 37%);
+        backdrop-filter: blur( 13.5px );
+        -webkit-backdrop-filter: blur( 13.5px );
     }
 
     .colorOption {
@@ -523,6 +673,10 @@
         align-items: center;
         width: 5vh;
         place-content: center;
+    }
+
+    .penType.active {
+        border: green 2px solid;
     }
 
     div#txtEditorWrap .topHandle {
@@ -557,6 +711,11 @@
         overflow-y: auto;
         visibility: visible;
         transition: transform 0.2s ease, visibility 0.2s ease;
+        padding-left: 5px;
+        background: rgba( 255, 255, 255, 0.25 );
+        box-shadow: 0 8px 32px 0 rgb(31 38 135 / 37%);
+        backdrop-filter: blur( 13.5px );
+        -webkit-backdrop-filter: blur( 13.5px );
     }
 
     #notesBar.hide{
@@ -626,6 +785,54 @@
     #menuButton.closed svg.close{
         pointer-events: none;
         opacity: 0;
+    }
+
+    div#penEditor {
+        position: absolute;
+        z-index: 200;
+        padding: 12px;
+        display: grid;
+        grid-template-rows: 5vh 3vh 15vh;
+        transform-origin: left top;
+        background: rgba( 255, 255, 255, 0.25 );
+        box-shadow: 0 8px 32px 0 rgb(31 38 135 / 37%);
+        backdrop-filter: blur( 13.5px );
+        -webkit-backdrop-filter: blur( 13.5px );
+        border-radius: 10px;
+        opacity: 1;
+        visibility: visible;
+        transition: opacity 0.2s;
+    }
+
+    div#penEditor.hide {
+        visibility: hidden;
+        touch-action: none;
+        opacity: 0;
+    }
+    
+    #penEditor .types {
+        display: grid;
+        grid-template-columns: 5vh 5vh 5vh;
+        column-gap: 5px;
+    }
+
+    div#penList {
+        display: flex;
+        height: 5vh;
+        justify-content: center;
+        align-items: center;
+        flex-direction: row;
+        gap: 10px;
+        width: 100%;
+    }
+
+    .pen {
+        filter: drop-shadow(0px 0px 0px #555555);
+        transition: filter 0.2s ease-out;
+    }
+
+    .pen.active {
+        filter: drop-shadow(1px 1px 3px #555555);
     }
 </style>
 
