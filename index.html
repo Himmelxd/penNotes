@@ -66,9 +66,21 @@
 <div id="rubberEl" style="height: 20px;width: 20px;position: absolute;background: #9d9d9d36;pointer-events: none;">
 </div>
 
+<div id="imageEditPoints">
+    <div id="imgTR" onpointerdown="follow = this" style="border-left: 3px solid;width: 10px;cursor: w-resize;"></div>
+    <div id="imgBL" onpointerdown="follow = this" style="border-top: 3px solid;width: 10px;cursor: s-resize;"></div>
+    <div id="moveMiddle" onpointerdown="follow = this" style="height: 24px; width: 24px; padding: 8px;background: rgb(255 255 255 / 65%); border-radius: 30px; border: 2px solid rgb(0 0 0 / 65%);cursor: move;">
+        <svg style="width:24px;height:24px" viewBox="0 0 24 24">
+            <path fill="currentColor" d="M13,6V11H18V7.75L22.25,12L18,16.25V13H13V18H16.25L12,22.25L7.75,18H11V13H6V16.25L1.75,12L6,7.75V11H11V6H7.75L12,1.75L16.25,6H13Z" />
+        </svg>
+    </div>
+</div>
+
 <script>
+    imagesToPaste = [];
     mainS.onpointerdown = (e) => {
         e.stopPropagation();
+        moved = 0;
         if (e.buttons == 1 && e.pointerType == "pen" && (currentPen.getAttribute('type') == "pen" || currentPen.getAttribute('type') == 'pressure')) {
             path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
             path.setAttribute("d", `M ${e.offsetX} ${e.offsetY}`);
@@ -103,9 +115,17 @@
     penWasUp = true;
     lastP = [0, 0];
     beforeLastP = [0, 0];
+    moved = 0;
 
     lastPressure = 0.1;
     mainS.onpointermove = (e) => {
+        moved += 1;
+        if(!follow && imagesToPaste.length){
+                follow = document.createElement('img');
+                follow.src=imagesToPaste.shift();
+                follow.style.position='absolute';
+                document.body.append(follow)
+            }
         if (e.pointerType == 'pen' && (currentPen.getAttribute('type') == 'pen' || currentPen.getAttribute('type') == 'pressure')) {
             cP = [e.offsetX, e.offsetY];
             if (e.buttons > 30) {
@@ -237,13 +257,73 @@
 
     follow = null;
     document.onpointermove = move;
-    document.onpointerup = () => { follow = null };
+    document.onpointerup = (e) => {
+        if(e.pointerType != 'pen' && moved<5){
+            if(e.target.nodeName=='image'){
+                img = e.target;
+                imageEditPoints.imgEl = img;
+                imageEditPoints.classList.toggle('hide');
+                imgRec = img.getBoundingClientRect();
+                imgTR.style.top = imgRec.top+document.documentElement.scrollTop+window.pageYOffset;
+                imgTR.style.left = imgRec.right+document.documentElement.scrollLeft+window.pageXOffset;
+                imgTR.style.height = imgRec.height;
+                imgBL.style.top = imgRec.bottom+document.documentElement.scrollTop+window.pageYOffset;
+                imgBL.style.left = imgRec.left+document.documentElement.scrollLeft+window.pageXOffset;
+                imgBL.style.width = imgRec.width;
+                moveMiddle.style.top = ((imgRec.top+imgRec.bottom)/2)+document.documentElement.scrollTop-(moveMiddle.getBoundingClientRect().height/2)+window.pageYOffset;
+                moveMiddle.style.left = ((imgRec.left+imgRec.right)/2)+document.documentElement.scrollLeft-(moveMiddle.getBoundingClientRect().width/2)+window.pageXOffset;
+            } else {
+                if(!imageEditPoints.classList.contains('hide'))imageEditPoints.classList.add('hide');
+            }
+        }
+        if(follow.nodeName=='IMG'){
+            img = document.createElementNS('http://www.w3.org/2000/svg', 'image');
+            img.setAttribute('href',follow.src);
+            img.setAttribute('x', follow.style.left);
+            img.setAttribute('y', follow.style.top);
+            follow.remove();
+            mainS.appendChild(img);
+        } 
+        follow = null
+    };
     function move(e) {
-        if (follow && e.pressure > 0) {
+        if (follow && (e.pressure > 0 || follow.nodeName=='IMG')) {
             toFollow = follow;
             if(toFollow == txtEditorWrap) toFollow = toFollow.querySelector('.topHandle');
-            follow.style.left = Math.floor(e.clientX + window.pageXOffset - (toFollow.getClientRects()[0].width / 2));
-            follow.style.top = Math.floor(e.clientY + window.pageYOffset - (toFollow.getClientRects()[0].height / 2));
+            if(follow != imgBL) follow.style.left = Math.floor(e.clientX + window.pageXOffset - (toFollow.getClientRects()[0].width / 2));
+            if(follow != imgTR) follow.style.top = Math.floor(e.clientY + window.pageYOffset - (toFollow.getClientRects()[0].height / 2));
+        }
+        if([moveMiddle,imgBL,imgTR].includes(follow)){
+            img = moveMiddle.parentElement.imgEl;
+            if(follow == moveMiddle){
+                img.setAttribute("x", Math.floor(e.clientX + window.pageXOffset - (img.getBoundingClientRect().width / 2)));
+                img.setAttribute("y", Math.floor(e.clientY + window.pageYOffset - (img.getBoundingClientRect().height / 2)));
+            }
+            if(follow == imgTR){
+                img.setAttribute("width", parseInt(imgTR.style.left)-parseInt(img.getAttribute("x")));
+                img.removeAttribute("height");
+            }
+            if(follow == imgBL){
+                img.setAttribute("height", parseFloat(imgBL.style.top)-parseFloat(img.getAttribute("y")));
+                img.removeAttribute("width");
+            }
+            imgRec = img.getBoundingClientRect();
+            if(follow != moveMiddle) {
+                moveMiddle.style.top = ((imgRec.top+imgRec.bottom)/2)+document.documentElement.scrollTop-(moveMiddle.getBoundingClientRect().height/2)+window.pageYOffset;
+                moveMiddle.style.left = ((imgRec.left+imgRec.right)/2)+document.documentElement.scrollLeft-(moveMiddle.getBoundingClientRect().width/2)+window.pageXOffset;
+            }
+            imgTR.style.height = imgRec.height;
+            imgBL.style.width = imgRec.width;
+            if(follow != imgTR) {
+                imgTR.style.top = imgRec.top+document.documentElement.scrollTop+window.pageYOffset;
+                imgTR.style.left = imgRec.right+document.documentElement.scrollLeft+window.pageXOffset;
+            }
+            if(follow != imgBL) {
+                imgBL.style.top = imgRec.bottom+document.documentElement.scrollTop+window.pageYOffset;
+                imgBL.style.left = imgRec.left+document.documentElement.scrollLeft+window.pageXOffset;
+            }
+            
+
         }
     }
 
@@ -909,6 +989,15 @@
     }
 
     .adder div.hide {
+        display: none;
+    }
+
+    #imageEditPoints > div{
+        position: absolute;
+        user-select: none;
+    }
+
+    #imageEditPoints.hide{
         display: none;
     }
 
