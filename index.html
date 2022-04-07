@@ -752,6 +752,17 @@
     ev.preventDefault();
     }
 
+
+    document.onpaste = function(event){
+        var items = (event.clipboardData || event.originalEvent.clipboardData).items;
+        for (const item of items) {
+            if (item.kind === 'file') {
+                var file = item.getAsFile();
+                handleFileImport(file);
+            }
+        }
+    }
+
     async function drop(ev) {
         ev.preventDefault();
         
@@ -769,40 +780,44 @@
             }
         }
         for (const file of files) {
-            if(file.type.includes('image/')){
-                imagesToPaste.push(await toBase64(file));
-            }
-
-            if(file.type.includes('application/pdf')){
-                var loadingTask = pdfjsLib.getDocument({data: await file.arrayBuffer()});
-                loadingTask.promise.then(function(pdf) {
-                for (let pageNumber = 1; pageNumber <= pdf.numPages; pageNumber++) {
-                    pdf.getPage(pageNumber).then(function(page) {
-
-                        var scale = 1.5;
-                        var viewport = page.getViewport({scale: scale});
-    
-                        var canvas = document.createElement('canvas');
-                        var context = canvas.getContext('2d');
-                        canvas.height = viewport.height;
-                        canvas.width = viewport.width;
-    
-                        var renderContext = {
-                            canvasContext: context,
-                            viewport: viewport
-                        };
-                        var renderTask = page.render(renderContext);
-                        renderTask.promise.then(function () {
-                            imagesToPaste.push(canvas.toDataURL());
-                        });
-                    });
-                }
-                }, function (reason) {
-                    console.error(reason);
-                });
-            }
+            await handleFileImport(file);
         }
 
+    }
+
+    async function handleFileImport(file) {
+        if(file.type.includes('image/')){
+            imagesToPaste.push(await toBase64(file));
+        }
+
+        if(file.type.includes('application/pdf')){
+            var loadingTask = pdfjsLib.getDocument({data: await file.arrayBuffer()});
+            loadingTask.promise.then(function(pdf) {
+            for (let pageNumber = 1; pageNumber <= pdf.numPages; pageNumber++) {
+                pdf.getPage(pageNumber).then(function(page) {
+
+                    var scale = 1.5;
+                    var viewport = page.getViewport({scale: scale});
+
+                    var canvas = document.createElement('canvas');
+                    var context = canvas.getContext('2d');
+                    canvas.height = viewport.height;
+                    canvas.width = viewport.width;
+
+                    var renderContext = {
+                        canvasContext: context,
+                        viewport: viewport
+                    };
+                    var renderTask = page.render(renderContext);
+                    renderTask.promise.then(function () {
+                        imagesToPaste.push(canvas.toDataURL());
+                    });
+                });
+            }
+            }, function (reason) {
+                console.error(reason);
+            });
+        }
     }
 
     const toBase64 = file => new Promise((resolve, reject) => {
