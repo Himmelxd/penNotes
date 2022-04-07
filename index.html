@@ -4,6 +4,7 @@
     <title>PenNotes</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <script src="store.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/pdfjs-dist@2.13.216/build/pdf.min.js"></script>
 </head>
 
 <div id="noteToolbar">
@@ -56,7 +57,7 @@
     <div onclick="openDir(null,dirFilesList,true)">Letzten öffnen</div>
 </div>
 </div>
-<svg id="mainS" style="height: 29cm;width:21cm;"></svg>
+<svg id="mainS" style="height: 29cm;width:21cm;" ondrop="drop(event)" ondragover="allowDrop(event)"></svg>
 
 <div id="txtEditorWrap" style="position: absolute;display: none;">
     <div class="topHandle" onpointerdown="follow = txtEditorWrap;" onpointerup="txtEditor.focus();txtEditor.drop()">---</div>
@@ -78,6 +79,14 @@
 
 <script>
     imagesToPaste = [];
+    document.onkeydown = (e) => {
+        if(e.code=='Delete'){
+            if(!imageEditPoints.classList.contains('hide')){
+                imageEditPoints.imgEl.remove();
+                imageEditPoints.classList.add('hide');
+            }
+        }
+    }
     mainS.onpointerdown = (e) => {
         e.stopPropagation();
         moved = 0;
@@ -124,6 +133,7 @@
                 follow = document.createElement('img');
                 follow.src=imagesToPaste.shift();
                 follow.style.position='absolute';
+                follow.style.height = window.visualViewport.height;
                 document.body.append(follow)
             }
         if (e.pointerType == 'pen' && (currentPen.getAttribute('type') == 'pen' || currentPen.getAttribute('type') == 'pressure')) {
@@ -281,6 +291,7 @@
             img.setAttribute('href',follow.src);
             img.setAttribute('x', follow.style.left);
             img.setAttribute('y', follow.style.top);
+            img.setAttribute('height', follow.style.height)
             follow.remove();
             mainS.appendChild(img);
         } 
@@ -446,6 +457,7 @@
     let wrStream;
 
     async function openFile(fileHandle=null) {
+        imageEditPoints.classList.add('hide');
         if(fileHandle==null){
             [fileHandle] = await window.showOpenFilePicker();
         }
@@ -734,6 +746,71 @@
         makePenList(pens);
         exportPens();
     }
+
+
+    function allowDrop(ev) {
+    ev.preventDefault();
+    }
+
+    async function drop(ev) {
+        ev.preventDefault();
+        
+        files = [];
+        if (ev.dataTransfer.items) {
+            for (var i = 0; i < ev.dataTransfer.items.length; i++) {
+                if (ev.dataTransfer.items[i].kind === 'file') {
+                    var file = ev.dataTransfer.items[i].getAsFile();
+                    files.push(file);
+                }
+            }
+        } else {
+            for (var i = 0; i < ev.dataTransfer.files.length; i++) {
+                files.push(file);
+            }
+        }
+        for (const file of files) {
+            if(file.type.includes('image/')){
+                imagesToPaste.push(await toBase64(file));
+            }
+
+            if(file.type.includes('application/pdf')){
+                var loadingTask = pdfjsLib.getDocument({data: await file.arrayBuffer()});
+                loadingTask.promise.then(function(pdf) {
+                for (let pageNumber = 1; pageNumber <= pdf.numPages; pageNumber++) {
+                    pdf.getPage(pageNumber).then(function(page) {
+
+                        var scale = 1.5;
+                        var viewport = page.getViewport({scale: scale});
+    
+                        var canvas = document.createElement('canvas');
+                        var context = canvas.getContext('2d');
+                        canvas.height = viewport.height;
+                        canvas.width = viewport.width;
+    
+                        var renderContext = {
+                            canvasContext: context,
+                            viewport: viewport
+                        };
+                        var renderTask = page.render(renderContext);
+                        renderTask.promise.then(function () {
+                            imagesToPaste.push(canvas.toDataURL());
+                        });
+                    });
+                }
+                }, function (reason) {
+                    console.error(reason);
+                });
+            }
+        }
+
+    }
+
+    const toBase64 = file => new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.readAsDataURL(file);
+        reader.onload = () => resolve(reader.result);
+        reader.onerror = error => reject(error);
+    });
 </script>
 
 <style>
