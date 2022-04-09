@@ -97,6 +97,7 @@
             if(mainS.querySelector('.selected')){
                 for (const selected of mainS.querySelectorAll('.selected')) {
                     selected.remove();
+                    selEditPoints.classList.add('hide');
                 }
             }
             if(!imageEditPoints.classList.contains('hide')){
