@@ -462,7 +462,7 @@
 
     dontScrollByPointer = false;
     document.body.addEventListener("pointerdown", function (e) {
-        if (e.pointerType === "pen" || e.path.includes(imageEditPoints) || e.path.includes(selEditPoints)) {
+        if (e.pointerType === "pen" || e.path.includes(imageEditPoints) || e.path.includes(selEditPoints) || e.path.includes(txtEditorWrap)) {
             dontScrollByPointer = true;
         } else {
             dontScrollByPointer = false;
@@ -480,7 +480,7 @@
     document.body.addEventListener("touchstart", function (e) {
         cy = e.touches[0].clientY;
         cx = e.touches[0].clientX;
-        if (document.elementFromPoint(cx, cy) != mainS && document.elementFromPoint(cx, cy).parentElement != mainS && !e.path.includes(imageEditPoints) && !e.path.includes(selEditPoints)) {
+        if (document.elementFromPoint(cx, cy) != mainS && document.elementFromPoint(cx, cy).parentElement != mainS && !e.path.includes(imageEditPoints) && !e.path.includes(selEditPoints) && !e.path.includes(txtEditorWrap)) {
             return;
         };
         if (dontScrollByPointer) {
