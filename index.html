@@ -82,30 +82,53 @@
     </div>
 </div>
 
+<div id="selEditPoints" class="hide">
+    <div id="selMoveMiddle" onpointerdown="follow = this" style="height: 24px; width: 24px; padding: 8px;background: rgb(255 255 255 / 65%); border-radius: 30px; border: 2px solid rgb(0 0 0 / 65%);cursor: move;">
+        <svg style="width:24px;height:24px" viewBox="0 0 24 24">
+            <path fill="currentColor" d="M13,6V11H18V7.75L22.25,12L18,16.25V13H13V18H16.25L12,22.25L7.75,18H11V13H6V16.25L1.75,12L6,7.75V11H11V6H7.75L12,1.75L16.25,6H13Z" />
+        </svg>
+    </div>
+</div>
+
 <script>
     imagesToPaste = [];
     document.onkeydown = (e) => {
         if(e.code=='Delete'){
+            if(mainS.querySelector('.selected')){
+                for (const selected of mainS.querySelectorAll('.selected')) {
+                    selected.remove();
+                }
+            }
             if(!imageEditPoints.classList.contains('hide')){
                 imageEditPoints.imgEl.remove();
                 imageEditPoints.classList.add('hide');
             }
         }
     }
+    isSelecting = false;
     mainS.onpointerdown = (e) => {
         e.stopPropagation();
         moved = 0;
-        if (e.buttons == 1 && e.pointerType == "pen" && ['pen','pressure','highlighter'].includes(currentPen.getAttribute('type'))) {
+        if(e.buttons == 2 && e.pointerType == "pen" ) isSelecting = true;
+        if ((e.buttons == 1 && e.pointerType == "pen" && ['pen','pressure','highlighter'].includes(currentPen.getAttribute('type'))) || isSelecting) {
             path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
             path.setAttribute("d", `M ${e.offsetX} ${e.offsetY}`);
             lastPressure = e.pressure;
-            switch (currentPen.getAttribute('type')) {
+            penType = isSelecting?'select':currentPen.getAttribute('type');
+            switch (penType) {
                 case 'pressure':
                     path.style.fill = currentPen.getAttribute('color');
                     break;
                 case 'pen':
                     path.style.stroke = currentPen.getAttribute('color');
                     path.style.strokeWidth = currentPen.getAttribute('size');
+                    break;
+                case 'select':
+                    path.style.stroke = 'rgb(105 105 105)';
+                    path.style.strokeWidth = 1;
+                    path.style.strokeDasharray = '10, 10';
+                    path.style.fill = '#2b2b2b12';
+                    path.classList.add('selector');
                     break;
                 case 'highlighter':
                     path.style.stroke = currentPen.getAttribute('color');
@@ -151,7 +174,7 @@
                 follow.style.height = window.visualViewport.height;
                 document.body.append(follow)
             }
-        if (e.pointerType == 'pen' && ['pen','pressure','highlighter'].includes(currentPen.getAttribute('type'))) {
+        if ((e.pointerType == 'pen' && ['pen','pressure','highlighter'].includes(currentPen.getAttribute('type'))) || isSelecting) {
             cP = [e.offsetX, e.offsetY];
             if (e.buttons > 30) {
                 e.stopPropagation();
@@ -167,9 +190,9 @@
 
             } else if (Math.abs(cP[0] - lastP[0]) > minDiff || Math.abs(cP[1] - lastP[1]) > minDiff) {
                 e.stopPropagation();
-                if (e.buttons == 1) {
+                if (e.buttons == 1 || isSelecting) {
                     path = mainS.querySelector('path:last-child');
-                    if (currentPen.getAttribute('type') == 'pen') {
+                    if (currentPen.getAttribute('type') == 'pen' || isSelecting) {
                         path.setAttribute("d", `${path.getAttribute("d")} L${cP[0]} ${cP[1]}`);
                     } else if (currentPen.getAttribute('type') == 'highlighter') {
                         path.setAttribute("d", `${path.getAttribute("d")} L${cP[0]} ${cP[1]}`);
@@ -303,7 +326,7 @@
                 if(!imageEditPoints.classList.contains('hide'))imageEditPoints.classList.add('hide');
             }
         }
-        if(follow.nodeName=='IMG'){
+        if(follow && follow.nodeName=='IMG'){
             img = document.createElementNS('http://www.w3.org/2000/svg', 'image');
             img.setAttribute('href',follow.src);
             img.setAttribute('x', follow.style.left);
@@ -352,10 +375,35 @@
             }
             
 
+        } else if(selMoveMiddle == follow){
+            if(follow == selMoveMiddle){
+                moveRec = selMoveMiddle.getBoundingClientRect();
+                deltaX = selMoveMiddle.getAttribute("lastX") - moveRec.x;
+                deltaY = selMoveMiddle.getAttribute("lastY") - moveRec.y;
+                for (const elem of mainS.querySelectorAll('.selected')) {
+                    if(elem.style.transform){
+                        lastTransXY = elem.style.transform.split('translate(')[1].split(')')[0].split(',');
+                        lastTransX = parseFloat(lastTransXY[0]);
+                        lastTransY = parseFloat(lastTransXY[1]);
+                        elem.style.transform = `translate(${lastTransX-deltaX}px,${lastTransY-deltaY}px)`;
+                    } else {
+                        elem.style.transform = `translate(${deltaX}px,${deltaY}px)`;
+                    }
+                }
+                selMoveMiddle.setAttribute("lastX",selMoveMiddle.getBoundingClientRect().x);
+                selMoveMiddle.setAttribute("lastY",selMoveMiddle.getBoundingClientRect().y);
+            }
         }
     }
 
+    document.body.oncontextmenu = (e)=>{
+        // no context menu on selecting
+        if(e.pointerType == 'pen' && moved>20){
+            return false;
+        }
+    }
     lS = '';
+    selection = [];
     mainS.onpointerup = (e) => {
         penWasUp = true
 
@@ -374,20 +422,57 @@
                 lPath.setAttribute("d", `${d.replaceAll('Z', '')} A 2 2 0 0 1 ${d.split(" ")[0].slice(1)} ${d.split(" ")[1]}`);
             }
         }
+        if(isSelecting){
+            selector = mainS.querySelector('.selector');
+            for (let el of mainS.querySelectorAll('.selected')) {
+                el.classList.remove('selected')
+            }
+
+            selection = getElementsCoveredFully(selector);
+            if(selection[0]) {
+                maxX = 0;
+                maxY = 0;
+                minX = selection[0].getBoundingClientRect().left;
+                minY = selection[0].getBoundingClientRect().top;
+                for (let el of selection) {
+                    el.classList.add('selected');
+                    rec = el.getBoundingClientRect();
+                    if(rec.bottom>maxY) maxY = rec.bottom;
+                    if(rec.top<minY) minY = rec.top;
+                    if(rec.left<minX) minX = rec.left;
+                    if(rec.right>maxX) maxX = rec.right;
+                }
+                
+                selMoveMiddle.style.top = ((minY+maxY)/2)+document.documentElement.scrollTop-(selMoveMiddle.getBoundingClientRect().height/2)+window.pageYOffset;
+                selMoveMiddle.style.left = ((minX+maxX)/2)+document.documentElement.scrollLeft-(selMoveMiddle.getBoundingClientRect().width/2)+window.pageXOffset;
+                selEditPoints.classList.remove('hide')
+                selMoveMiddle.setAttribute("lastX",selMoveMiddle.getBoundingClientRect().x);
+                selMoveMiddle.setAttribute("lastY",selMoveMiddle.getBoundingClientRect().y);
+            }
+            selector.remove();
+        }
         lastP = [0, 0]
         rubberEl.style.display = 'none';
         if (lS != mainS.innerHTML && fileHandle) {
             save2File(mainS.innerHTML)
         }
+        isSelecting = false;
     }
 
 
     dontScrollByPointer = false;
     document.body.addEventListener("pointerdown", function (e) {
-        if (e.pointerType === "pen" || e.path.includes(imageEditPoints)) {
+        if (e.pointerType === "pen" || e.path.includes(imageEditPoints) || e.path.includes(selEditPoints)) {
             dontScrollByPointer = true;
         } else {
             dontScrollByPointer = false;
+        }
+        if(selection && !e.path.includes(selEditPoints)){
+            selection = [];
+            selEditPoints.classList.add('hide');
+            for (let el of mainS.querySelectorAll('.selected')) {
+                el.classList.remove('selected');
+            }
         }
     }, {
         capture: true
@@ -395,7 +480,7 @@
     document.body.addEventListener("touchstart", function (e) {
         cy = e.touches[0].clientY;
         cx = e.touches[0].clientX;
-        if (document.elementFromPoint(cx, cy) != mainS && document.elementFromPoint(cx, cy).parentElement != mainS && !e.path.includes(imageEditPoints)) {
+        if (document.elementFromPoint(cx, cy) != mainS && document.elementFromPoint(cx, cy).parentElement != mainS && !e.path.includes(imageEditPoints) && !e.path.includes(selEditPoints)) {
             return;
         };
         if (dontScrollByPointer) {
@@ -860,6 +945,43 @@
         reader.onload = () => resolve(reader.result);
         reader.onerror = error => reject(error);
     });
+
+    function getElementsCoveredFully(borderEl) {
+        result = [];
+        rec = borderEl.getBoundingClientRect();
+        for (const element of mainS.children) {
+            elementRec = element.getBoundingClientRect();
+            if(elementRec.top>rec.top && elementRec.bottom<rec.bottom && elementRec.left>rec.left && elementRec.right<rec.right){
+                if(element.nodeName != 'path'){
+                    if( document.elementsFromPoint(elementRec.left,elementRec.top).includes(borderEl) && 
+                        document.elementsFromPoint(elementRec.right,elementRec.top).includes(borderEl) && 
+                        document.elementsFromPoint(elementRec.right,elementRec.bottom).includes(borderEl)  &&
+                        document.elementsFromPoint(elementRec.left,elementRec.bottom).includes(borderEl)){
+                            result.push(element)
+                        }
+                } else {
+                    isInside = true;
+                    for (let l = 0; l < element.getTotalLength(); l++) {
+                        p = element.getPointAtLength(l);
+                        delta = [0,0];
+                        if(element.style.transform && element.style.transform.includes('translate(')){
+                            delta = element.style.transform.split('translate(')[1].split(')')[0].split(',');
+                            delta[0] = parseFloat(delta[0])
+                            delta[1] = parseFloat(delta[1])
+                        }
+                        if(!document.elementsFromPoint(p.x+delta[0]-(document.documentElement.scrollLeft+window.pageXOffset),p.y+delta[1]-(document.documentElement.scrollTop+window.pageYOffset)).includes(borderEl)){
+                            isInside = false;
+                            continue;
+                        }
+                    }
+                    if(isInside){
+                        result.push(element)
+                    }
+                }
+            }
+        }
+        return result;
+    }
 </script>
 
 <style>
@@ -1118,13 +1240,17 @@
         display: none;
     }
 
-    #imageEditPoints > div{
+    #imageEditPoints > div, #selEditPoints > div{
         position: absolute;
         user-select: none;
     }
 
-    #imageEditPoints.hide{
+    #imageEditPoints.hide,#selEditPoints.hide{
         display: none;
+    }
+
+    #mainS .selected {
+        filter: drop-shadow(0px 0px 4px gray);
     }
 
 </style>
