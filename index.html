@@ -48,7 +48,7 @@
     </div>
 </div>
 <input id="penThicknessSlide" type="range" min="1" max="20" step="1.0" value="3" oninput="setPenElement(currentPen,currentPen.getAttribute('color'),this.value,currentPen.getAttribute('type'));">
-<input id="penColorPick" type="color" oninput="setPenElement(currentPen,this.value,currentPen.getAttribute('size'),currentPen.getAttribute('type'));">
+<input id="penColorPick" type="color" oninput="setPenElement(currentPen,this.value,currentPen.getAttribute('size'),currentPen.getAttribute('type'));penEditor.style.setProperty('--background_color',this.value+'40')">
 <div onclick="currentPen.remove();penList.querySelector('.pen').click();exportPens();">
     <svg style="width:24px;height:24px" viewBox="0 0 24 24">
         <path fill="currentColor" d="M19,4H15.5L14.5,3H9.5L8.5,4H5V6H19M6,19A2,2 0 0,0 8,21H16A2,2 0 0,0 18,19V7H6V19Z" />
@@ -733,6 +733,7 @@
             if(currentPen == penElem){
                 penEditor.classList.remove('hide');
                 penColorPick.value = currentPen.getAttribute('color');
+                penEditor.style.setProperty('--background_color',penColorPick.value+'40')
                 penThicknessSlide.value = currentPen.getAttribute('size');
                 for (const type of penEditor.querySelectorAll('.types .penType')) {
                     typeName = type.getAttribute('type');
@@ -1030,7 +1031,7 @@
         display: grid;
         grid-template-rows: 5vh 3vh 15vh;
         transform-origin: left top;
-        background: rgba( 255, 255, 255, 0.25 );
+        background: var(--background_color);
         box-shadow: 0 8px 32px 0 rgb(31 38 135 / 37%);
         backdrop-filter: blur( 13.5px );
         -webkit-backdrop-filter: blur( 13.5px );
