@@ -108,6 +108,7 @@
     }
     isSelecting = false;
     mainS.onpointerdown = (e) => {
+        if(!currentPen) penList.querySelector('.pen').click();
         e.stopPropagation();
         moved = 0;
         if(e.buttons == 2 && e.pointerType == "pen" ) isSelecting = true;
@@ -168,6 +169,7 @@
     lastPressure = 0.1;
     mainS.onpointermove = (e) => {
         moved += 1;
+        if(!currentPen) penList.querySelector('.pen').click();
         if(!follow && imagesToPaste.length){
                 follow = document.createElement('img');
                 follow.src=imagesToPaste.shift();
