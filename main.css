@@ -1,0 +1,318 @@
+body {
+    margin: 0px;
+}
+line {
+    stroke-linecap: round;
+}
+
+#mainS path {
+    fill: none;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+
+
+
+
+@media (prefers-color-scheme: dark) {
+    body{
+        background: #1c1c1c;
+    }
+}
+
+div#noteToolbar {
+    position: absolute;
+    top: 0px;
+    width: calc(100% + 6px);
+    height: 5vh;
+    display: flex;
+    left: 0px;
+    box-shadow: 0px 4px 4px -4px black;
+    transform-origin: top left;
+    padding-top: 2px;
+    z-index: 99;
+    background: rgba( 255, 255, 255, 0.25 );
+    box-shadow: 0 8px 32px 0 rgb(120 120 120 / 37%);
+    backdrop-filter: blur( 13.5px );
+    -webkit-backdrop-filter: blur( 13.5px );
+}
+
+.colorOption {
+    height: 100%;
+    width: 5vh;
+    transform: scale(1.0);
+    transition: all 0.2s ease;
+}
+
+.colorOption:hover {
+    transform: scale(1.1)
+}
+
+.colorOption.active {
+    border: 3px solid #a2ff96;
+    box-sizing: border-box;
+    z-index: 1;
+}
+
+
+.penType {
+    border: 1px solid black;
+    display: flex;
+    align-items: center;
+    width: 5vh;
+    place-content: center;
+}
+
+.penType.active {
+    border: green 2px solid;
+}
+
+div#txtEditorWrap .topHandle {
+    width: calc(100% + 4px);
+    text-align: center;
+    height: 20px;
+    position: relative;
+    left: -2px;
+    background-color: #d7d7d76e;
+    border-radius: 2px 2px 0px 0px;
+    user-select: none;
+}
+
+div#txtEditor:focus-visible {
+    outline: 2px dashed #d7d7d76e;
+}
+
+#notesBar{
+    transform: scale(var(--scale)) translate(var(--translate));
+    --translate: 0%;
+    --scale: 1;
+    height: calc(100% - (5vh * var(--scale)));
+    position: absolute;
+    left: 0px;
+    top: 0px;
+    margin-top: calc(5vh * var(--scale) - 1px);
+    width: 100px;
+    z-index: 98;
+    box-shadow: 0px 0px 7px -1px black;
+    transform-origin: top left;
+    overflow-y: auto;
+    visibility: visible;
+    transition: transform 0.2s ease, visibility 0.2s ease;
+    padding-left: 5px;
+    background: rgb(255 255 255 / 83%);
+    box-shadow: 0 8px 32px 0 rgb(31 38 135 / 37%);
+    backdrop-filter: blur( 13.5px );
+    -webkit-backdrop-filter: blur( 13.5px );
+}
+
+#notesBar.hide{
+    --translate: calc(-100% - 20px);
+    visibility: hidden;
+}
+
+#dirFilesList .elem.directory:after {
+    content: '>';
+    right: 4px;
+    position: absolute;
+}
+
+.elem.directory, .elem.file {
+    white-space: nowrap;
+}
+
+.elem {
+    height: 1.4cm;
+    padding-left: 10px;
+    display: flex;
+    align-items: center;
+    border-bottom: 2px solid #e0e0e0;
+    border-left: 2px solid #e0e0e0;
+    padding-right: 110px;
+}
+
+div#dirFilesList {
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    overflow-x: auto;
+}
+
+.inDir {
+    position: relative;
+    left: 8px;
+    width: calc(100% - 8px);
+    display: block;
+}
+
+.inDir.collapsed{
+    display: none;
+}
+
+#menuButton{
+    position: relative;
+    width: 5vh;
+    height: 100%;
+}
+
+div#menuButton svg {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    opacity: 1;
+    transition: all 0.2s ease;
+    pointer-events: all;
+    transform: scale(1);
+}
+#menuButton.opened svg.open{
+    pointer-events: none;
+    transform: scaleX(0.5);
+    transform-origin: right center;
+    opacity: 0;
+}
+#menuButton.closed svg.close{
+    pointer-events: none;
+    opacity: 0;
+}
+
+div#penEditor {
+    position: absolute;
+    z-index: 200;
+    padding: 12px;
+    display: grid;
+    grid-template-rows: 5vh 3vh 15vh;
+    transform-origin: left top;
+    background: var(--background_color);
+    box-shadow: 0 8px 32px 0 rgb(31 38 135 / 37%);
+    backdrop-filter: blur( 13.5px );
+    -webkit-backdrop-filter: blur( 13.5px );
+    border-radius: 10px;
+    opacity: 1;
+    visibility: visible;
+    transition: opacity 0.2s;
+}
+
+div#penEditor.hide {
+    visibility: hidden;
+    touch-action: none;
+    opacity: 0;
+}
+
+#penEditor .types {
+    display: grid;
+    grid-template-columns: 5vh 5vh 5vh;
+    column-gap: 5px;
+}
+
+div#penList {
+    display: flex;
+    height: 5vh;
+    justify-content: center;
+    align-items: center;
+    flex-direction: row;
+    gap: 10px;
+    width: 100%;
+}
+
+.pen {
+    filter: drop-shadow(0px 0px 0px #555555);
+    transition: filter 0.2s ease-out;
+}
+
+.pen.active {
+    filter: drop-shadow(1px 1px 3px #555555);
+}
+
+* {
+    scrollbar-width: auto;
+    scrollbar-color: #3a3a3a9f #ffffff00;
+}
+
+*::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+}
+
+*::-webkit-scrollbar-track {
+    background: #53535300;
+}
+
+*::-webkit-scrollbar-thumb {
+    background-color: #3a3a3a9f;
+    border-radius: 10px;
+}
+
+.adder input.hide {
+    display: none;
+}
+
+.adder input[type="text"] {
+    width: 100%;
+    height: 100%;
+}
+
+.adder {
+    display: flex;
+    align-items: center;
+    gap: 3px;
+}
+
+
+.adder div {
+    height: 2rem;
+    font-size: 1.5rem;
+    display: flex;
+    align-items: center;
+}
+
+.adder div.hide {
+    display: none;
+}
+
+#imageEditPoints > div, #selEditPoints > div{
+    position: absolute;
+    user-select: none;
+}
+
+#imageEditPoints.hide,#selEditPoints.hide{
+    display: none;
+}
+
+#mainS .selected {
+    filter: drop-shadow(0px 0px 4px gray);
+}
+
+/* Log Message */
+.logMessage {
+    position: relative;
+    right: -100%;
+    padding: 10px;
+    background-color: #e23b3b;
+    margin-bottom: 10px;
+    border-top-left-radius: 1vh;
+    border-bottom-left-radius: 1vh;
+    padding-right: 30px;
+    color: white;
+    transition: right 1s ease;
+}
+
+.logMessage h4 {
+    margin: 8px;
+    text-align: center;
+    margin-bottom: -5px;
+}
+.logMessage p {
+    margin-bottom: 2px;
+}
+
+div#logContainter {
+    position: fixed;
+    top: 20vh;
+    right: 0%;
+    max-width: 30vmax;
+    pointer-events: none;
+    z-index: 998;
+}
+
+.logMessage.expandedLog {
+    right: 0%;
+}
