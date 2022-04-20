@@ -1,4 +1,4 @@
-toCache = ["/","sw.js","index.html","store.js","main.js","main.css","https://cdn.jsdelivr.net/npm/pdfjs-dist@2.13.216/build/pdf.min.js","https://cdn.jsdelivr.net/npm/pdfjs-dist@2.13.216/build/pdf.worker.min.js"];
+toCache = ["/","sw.js","index.html","store.js","main.js","main.css","manifest.json","https://cdn.jsdelivr.net/npm/pdfjs-dist@2.13.216/build/pdf.min.js","https://cdn.jsdelivr.net/npm/pdfjs-dist@2.13.216/build/pdf.worker.min.js"];
 lastUpdateEvent = '';
 
 self.addEventListener('install', e => {
