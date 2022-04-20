@@ -264,7 +264,7 @@ div#penList {
     align-items: center;
 }
 
-.adder div.hide {
+.adder div.hide, #isSaving.hide {
     display: none;
 }
 

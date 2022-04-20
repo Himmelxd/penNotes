@@ -203,6 +203,7 @@ function textEdit(e) {
         text = text.replaceAll('<div>', `<tspan x="${elem.getAttribute("x")}" dy="${comFontSize}">`);
         text = text.replaceAll('</div>', '</tspan>');
         elem.innerHTML = text;
+        save2File();
         txtEditorWrap.style.display = 'none';
         elem.style.visibility = null;
     }
@@ -361,11 +362,16 @@ mainS.onpointerup = (e) => {
     }
     lastP = [0, 0]
     rubberEl.style.display = 'none';
-    if (lS != mainS.innerHTML && fileHandle) {
-        save2File(mainS.innerHTML)
-    }
+    lastChange = Date.now();
     isSelecting = false;
 }
+lastChange = 0;
+
+setInterval(() => {
+    if(Date.now()-lastChange > 4500){
+        save2File()
+    }
+}, 5000);
 
 
 dontScrollByPointer = false;
@@ -486,12 +492,20 @@ async function openFile(fileHandle = null) {
 
 }
 
-async function save2File(data) {
-    const writableStream = await fileHandle.createWritable();
-
-    await writableStream.write(data);
-    await writableStream.close();
-    lS = data;
+async function save2File(data=mainS.innerHTML) {
+    if(!fileHandle || lS == data) return;
+    try {
+        isSaving.classList.remove('hide');
+        const writableStream = await fileHandle.createWritable();
+        
+        await writableStream.write(data);
+        await writableStream.close();
+        lS = data;
+        isSaving.classList.add('hide');
+    } catch (error) {
+        console.log(error);
+    }
+    return 1;
 }
 
 // window.onclick = () => {
@@ -531,11 +545,13 @@ async function openDir(dir = null, elementTo = dirFilesList, openRecent = false,
         oldHandle = await get('dirHandle');
         if (openRecent && oldHandle) {
             dirHandle = oldHandle;
-            await dirHandle.requestPermission()
+            await dirHandle.requestPermission({ mode: "readwrite" })
         } else {
             dirHandle = await window.showDirectoryPicker({
-                startIn: oldHandle
+                startIn: oldHandle,
+                mode: "readwrite"
             });
+            await dirHandle.requestPermission({ mode: "readwrite" })
             set('dirHandle', dirHandle);
         }
         dir = dirHandle;
@@ -569,10 +585,12 @@ async function openDir(dir = null, elementTo = dirFilesList, openRecent = false,
             e.setAttribute('path', elementTo.getAttribute('path') + '/' + entry.name);
         }
         e.onclick = async (event) => {
-            target = event.target;
+            let target = event.target;
             if (target.classList.contains('file')) {
-                fileHandle = await dir.getFileHandle(target.getAttribute('name'));
-                openFile(fileHandle);
+                save2File().then(async ()=>{
+                    fileHandle = await dir.getFileHandle(target.getAttribute('name'));
+                    openFile(fileHandle);
+                })
             } else if (target.classList.contains('directory')) {
                 openDir(await dir.getDirectoryHandle(target.getAttribute('name')), target);
             }
