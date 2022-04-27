@@ -435,10 +435,10 @@ function hscrollbar() {
 
     if (inflatePlane) {
         if (mainS.getBoundingClientRect().right - window.innerWidth < 0) {
-            mainS.style.width = parseInt(mainS.style.width) - (mainS.getBoundingClientRect().right - window.innerWidth);
+            mainS.style.width = parseInt(mainS.style.width) - (mainS.getBoundingClientRect().right - window.innerWidth) + 20;
         }
         if (mainS.getBoundingClientRect().bottom - window.innerHeight < 0) {
-            mainS.style.height = parseInt(mainS.style.height) - (mainS.getBoundingClientRect().bottom - window.innerHeight);
+            mainS.style.height = parseInt(mainS.style.height) - (mainS.getBoundingClientRect().bottom - window.innerHeight) + 20;
         }
     }
 }
