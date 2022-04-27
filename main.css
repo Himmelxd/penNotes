@@ -316,3 +316,18 @@ div#logContainter {
 .logMessage.expandedLog {
     right: 0%;
 }
+
+.iconBtn{
+    background-color: #00000000;
+    border: none;
+    color: black;
+    font-weight: bold;
+    font-size: 4vmin;
+    cursor: pointer;
+}
+
+#toggle-fullscreen {
+    position: absolute;
+    right: 70px;
+    top: 10px;
+}
