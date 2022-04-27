@@ -49,6 +49,7 @@ mainS.onpointerdown = (e) => {
                 break;
         }
         mainS.appendChild(path)
+        currentPath = path;
     }
 
     //Spawn Text
@@ -74,6 +75,7 @@ beforeLastP = [0, 0];
 moved = 0;
 
 lastPressure = 0.1;
+currentPath = null;
 mainS.onpointermove = (e) => {
     moved += 1;
     if (!currentPen) penList.querySelector('.pen').click();
@@ -101,9 +103,9 @@ mainS.onpointermove = (e) => {
         } else if (Math.abs(cP[0] - lastP[0]) > minDiff || Math.abs(cP[1] - lastP[1]) > minDiff) {
             e.stopPropagation();
             if (e.buttons == 1 || isSelecting) {
-                path = mainS.querySelector('path:last-child');
+                path = currentPath;
                 if (currentPen.getAttribute('type') == 'pen' || isSelecting) {
-                    path.setAttribute("d", `${path.getAttribute("d")} L${cP[0]} ${cP[1]}`);
+                    path.setAttribute("d", `${path.getAttribute("d")} L${cP[0].toFixed(3)} ${cP[1].toFixed(3)}`);
                 } else if (currentPen.getAttribute('type') == 'highlighter') {
                     path.setAttribute("d", `${path.getAttribute("d")} L${cP[0]} ${cP[1]}`);
                 } else if (currentPen.getAttribute('type') == 'pressure') {
