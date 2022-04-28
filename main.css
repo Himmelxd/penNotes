@@ -84,26 +84,17 @@ div#txtEditor:focus-visible {
 }
 
 #notesBar{
-    transform: scale(var(--scale)) translate(var(--translate));
-    --translate: 0%;
-    --scale: 1;
-    height: calc(100% - (5vh * var(--scale)));
-    position: absolute;
-    left: 0px;
-    top: 0px;
-    margin-top: calc(5vh * var(--scale) - 1px);
     width: 100px;
     z-index: 98;
     box-shadow: 0px 0px 7px -1px black;
-    transform-origin: top left;
     overflow-y: auto;
     visibility: visible;
     transition: transform 0.2s ease, visibility 0.2s ease;
     padding-left: 5px;
-    background: rgb(255 255 255 / 83%);
-    box-shadow: 0 8px 32px 0 rgb(31 38 135 / 37%);
-    backdrop-filter: blur( 13.5px );
-    -webkit-backdrop-filter: blur( 13.5px );
+    height: calc(100% - 5vh - 20px);
+    border-radius: 0px;
+    --translate: 0px;
+    opacity: 1;
 }
 
 #notesBar.hide{
@@ -331,4 +322,40 @@ div#logContainter {
     position: absolute;
     right: 70px;
     top: 10px;
+}
+#toggle-settings {
+    position: absolute;
+    right: 100px;
+    top: 10px;
+}
+
+#mainS.grid{
+    --gridY: 40px;
+    --gridX: 40px;
+    background-size: var(--gridX) var(--gridY);
+    background-image: linear-gradient(to right, rgb(228, 228, 228) 1px, transparent 1px), linear-gradient(rgb(228, 228, 228) 1px, transparent 1px);
+}
+
+.pane {
+    position: absolute;
+    z-index: 201;
+    padding: 12px;
+    transform-origin: top left;
+    background: var(--background_color);
+    box-shadow: 0 8px 32px 0 rgb(168 168 168 / 37%);
+    backdrop-filter: blur( 13.5px );
+    -webkit-backdrop-filter: blur( 13.5px );
+    border-radius: 10px;
+    opacity: 1;
+    visibility: visible;
+    transition: opacity 0.2s;
+    height: fit-content;
+    left: var(--left);
+    top: var(--top);
+}
+
+.pane.hide {
+    visibility: hidden;
+    touch-action: none;
+    opacity: 0;
 }

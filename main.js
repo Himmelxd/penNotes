@@ -417,19 +417,19 @@ function hscrollbar() {
                 document.body.scrollTop;
     document.getElementById('noteToolbar').style.top = top + window.visualViewport.offsetTop - 1;
     document.getElementById('penEditor').style.top = top + window.visualViewport.offsetTop + window.visualViewport.height * 0.06;
-    document.getElementById('notesBar').style.top = top + window.visualViewport.offsetTop;
     var left =
         window.pageXOffset ? window.pageXOffset :
             document.documentElement.scrollLeft ? document.documentElement.scrollLeft :
                 document.body.scrollLeft;
     document.getElementById('noteToolbar').style.left = left + window.visualViewport.offsetLeft;
     document.getElementById('penEditor').style.left = left + window.visualViewport.offsetLeft + (penEditor.getAttribute("leftOffToPen") * 1 / window.visualViewport.scale);
-    document.getElementById('notesBar').style.left = left + window.visualViewport.offsetLeft - 1;
 
     document.getElementById('noteToolbar').style.transform = `scale(${1 / window.visualViewport.scale})`;
     document.getElementById('penEditor').style.transform = `scale(${1 / window.visualViewport.scale})`;
     document.getElementById('notesBar').style.transition = 'none';
-    document.getElementById('notesBar').style.setProperty("--scale", 1 / window.visualViewport.scale);
+    document.body.style.setProperty("--scale", 1 / window.visualViewport.scale);
+    document.body.style.setProperty("--top", top + window.visualViewport.offsetTop);
+    document.body.style.setProperty("--left", left + window.visualViewport.offsetLeft);
     setTimeout(() => {
         document.getElementById('notesBar').style.transition = null;
     }, 100);
