@@ -329,11 +329,19 @@ div#logContainter {
     top: 10px;
 }
 
-#mainS.grid{
+#mainS[paper="grid"]{
     --gridY: 40px;
     --gridX: 40px;
     background-size: var(--gridX) var(--gridY);
     background-image: linear-gradient(to right, rgb(228, 228, 228) 1px, transparent 1px), linear-gradient(rgb(228, 228, 228) 1px, transparent 1px);
+}
+#mainS[paper="dots"]{
+    --gridY: 40px;
+    --gridX: 40px;
+    background-size: var(--gridX) var(--gridY);
+    background-image: radial-gradient(rgb(228, 228, 228) 1px, transparent 0);
+    background-position-x: calc(var(--gridX) / 2);
+    background-position-y: calc(var(--gridY) / 2);
 }
 
 .pane {

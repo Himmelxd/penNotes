@@ -50,7 +50,12 @@
 </div>
 <div id="settingsPane" class="pane hide" style="transform: scale(var(--scale)) translate(calc(100vw - 100% - 100px), 5vh);">
     <h3>Einstellungen</h3>
-    <input type="checkbox" onchange="if(this.checked){mainS.classList.add('grid')}else{mainS.classList.remove('grid')}"><label>Grid</label>
+    <label>Paper:</label>
+    <select oninput="mainS.setAttribute('paper',this.value)">
+        <option value="white">White</option>
+        <option value="grid">Grid</option>
+        <option value="dots">Dots</option>
+    </select>
 </div>
 
 <div id="penEditor" class="hide">
