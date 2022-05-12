@@ -12,7 +12,9 @@ line {
     stroke-linejoin: round;
 }
 
-
+#mainS text{
+    user-select: none;
+}
 
 
 @media (prefers-color-scheme: dark) {
