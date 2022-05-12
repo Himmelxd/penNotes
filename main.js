@@ -1,6 +1,6 @@
 imagesToPaste = [];
 document.onkeydown = (e) => {
-    if (e.code == 'Delete') {
+    if (e.key == 'Delete') {
         if (mainS.querySelector('.selected')) {
             for (const selected of mainS.querySelectorAll('.selected')) {
                 selected.remove();
