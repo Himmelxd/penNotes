@@ -369,3 +369,10 @@ div#logContainter {
     touch-action: none;
     opacity: 0;
 }
+
+
+@media print{
+    #noteToolbar,#notesBar, #penEditor{
+        display: none!important;
+    }
+}
