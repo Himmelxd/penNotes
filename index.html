@@ -54,7 +54,7 @@
     <select oninput="mainS.setAttribute('paper',this.value)">
         <option value="white">White</option>
         <option value="grid">Grid</option>
-        <option value="dots">Dots</option>
+        <option value="dots" selected>Dots</option>
     </select>
 </div>
 
@@ -96,7 +96,7 @@
     <div onclick="openDir(null,dirFilesList,true)">Letzten öffnen</div>
 </div>
 </div>
-<svg id="mainS" style="height: 29cm;width:21cm;backdrop-filter: opacity(1);" ondrop="drop(event)" ondragover="allowDrop(event)"></svg>
+<svg id="mainS" style="height: 29cm;width:21cm;backdrop-filter: opacity(1);" paper="dots" ondrop="drop(event)" ondragover="allowDrop(event)"></svg>
 
 <div id="txtEditorWrap" style="position: absolute;display: none;">
     <div class="topHandle" onpointerdown="follow = txtEditorWrap;" onpointerup="txtEditor.focus();txtEditor.drop()">---</div>
