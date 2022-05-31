@@ -1,16 +1,19 @@
 imagesToPaste = [];
+function delSelected() {
+    if (mainS.querySelector('.selected')) {
+        for (const selected of mainS.querySelectorAll('.selected')) {
+            selected.remove();
+            selEditPoints.classList.add('hide');
+        }
+    }
+    if (!imageEditPoints.classList.contains('hide')) {
+        imageEditPoints.imgEl.remove();
+        imageEditPoints.classList.add('hide');
+    }
+}
 document.onkeydown = (e) => {
     if (e.key == 'Delete') {
-        if (mainS.querySelector('.selected')) {
-            for (const selected of mainS.querySelectorAll('.selected')) {
-                selected.remove();
-                selEditPoints.classList.add('hide');
-            }
-        }
-        if (!imageEditPoints.classList.contains('hide')) {
-            imageEditPoints.imgEl.remove();
-            imageEditPoints.classList.add('hide');
-        }
+        delSelected();
     }
 }
 isSelecting = false;
@@ -86,21 +89,21 @@ mainS.onpointermove = (e) => {
         follow.style.height = window.visualViewport.height;
         document.body.append(follow)
     }
-    if ((e.pointerType == 'pen' && ['pen', 'pressure', 'highlighter'].includes(currentPen.getAttribute('type'))) || isSelecting) {
-        cP = [e.offsetX, e.offsetY];
-        if (e.buttons > 30) {
-            e.stopPropagation();
-            rubberEl.style.display = 'block';
-            rubberEl.style.left = e.pageX - 10;
-            rubberEl.style.top = e.pageY - 10;
-            e2ds = getElementsInRegion(e.clientX - 12.5, e.clientY - 12.5, 25, 25);
-            for (const e2d of e2ds) {
-                if (['line', 'path'].includes(e2d.nodeName)) {
-                    e2d.remove()
-                }
+    if (e.buttons > 30 || (currentPen.getAttribute('type') == 'eraser' && e.buttons > 0)) {
+        e.stopPropagation();
+        rubberEl.style.display = 'block';
+        rubberEl.style.left = e.pageX - 10;
+        rubberEl.style.top = e.pageY - 10;
+        e2ds = getElementsInRegion(e.clientX - 12.5, e.clientY - 12.5, 25, 25);
+        for (const e2d of e2ds) {
+            if (['line', 'path'].includes(e2d.nodeName)) {
+                e2d.remove()
             }
+        }
 
-        } else if (Math.abs(cP[0] - lastP[0]) > minDiff || Math.abs(cP[1] - lastP[1]) > minDiff) {
+    } else if ((e.pointerType == 'pen' && ['pen', 'pressure', 'highlighter'].includes(currentPen.getAttribute('type'))) || isSelecting) {
+        cP = [e.offsetX, e.offsetY];
+        if (Math.abs(cP[0] - lastP[0]) > minDiff || Math.abs(cP[1] - lastP[1]) > minDiff) {
             e.stopPropagation();
             if (e.buttons == 1 || isSelecting) {
                 path = currentPath;
@@ -246,6 +249,9 @@ document.onpointerup = (e) => {
         follow.remove();
         mainS.appendChild(img);
     }
+    if(e.path.includes(eraser)){
+        delSelected();
+    }
     follow = null
 };
 function move(e) {
@@ -383,7 +389,7 @@ document.body.addEventListener("pointerdown", function (e) {
     } else {
         dontScrollByPointer = false;
     }
-    if (selection && !e.path.includes(selEditPoints)) {
+    if (selection && !e.path.includes(selEditPoints) && !e.path.includes(eraser)) {
         selection = [];
         selEditPoints.classList.add('hide');
         for (let el of mainS.querySelectorAll('.selected')) {
@@ -719,11 +725,22 @@ function makePenList(list) {
         e.setAttribute('onclick', "setPenByElem(this)");
         penList.appendChild(e);
     }
+
+    e = document.createElement('div');
+    e.classList = 'eraser';
+    e.id = 'eraser';
+    e.innerHTML = `<svg style="width:24px;height:24px" viewBox="0 0 24 24"><path fill="currentColor" d="M16.24,3.56L21.19,8.5C21.97,9.29 21.97,10.55 21.19,11.34L12,20.53C10.44,22.09 7.91,22.09 6.34,20.53L2.81,17C2.03,16.21 2.03,14.95 2.81,14.16L13.41,3.56C14.2,2.78 15.46,2.78 16.24,3.56M4.22,15.58L7.76,19.11C8.54,19.9 9.8,19.9 10.59,19.11L14.12,15.58L9.17,10.63L4.22,15.58Z" /></svg>`;
+    e.style.color = 'salmon';
+    e.setAttribute("type","eraser")
+    e.setAttribute("onclick", "currentPen = this;this.classList.add('active');penList.querySelector('.pen.active').classList.remove('active');");
+    penList.appendChild(e);
+
     e = document.createElement('div');
     e.innerHTML = `<svg style="width:24px;height:24px" viewBox="0 0 24 24"><path fill="currentColor" d="M19,13H13V19H11V13H5V11H11V5H13V11H19V13Z" /></svg>`;
     e.style.color = 'darkgreen';
     e.onclick = addPen;
     penList.appendChild(e);
+    
 }
 
 function setPenByElem(penElem) {
@@ -751,6 +768,7 @@ function setPenByElem(penElem) {
     for (const pen of penList.querySelectorAll('.pen')) {
         if (pen != penElem) pen.classList.remove('active');
     }
+    penList.querySelector('.eraser').classList.remove('active');
     penElem.classList.add('active');
     currentPen = penElem;
 }
