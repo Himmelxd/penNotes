@@ -18,7 +18,7 @@ mainS.onpointerdown = (e) => {
     if (!currentPen) penList.querySelector('.pen').click();
     e.stopPropagation();
     moved = 0;
-    if (e.buttons == 2 && e.pointerType == "pen") isSelecting = true;
+    if ([2,5].includes(e.buttons) && e.pointerType == "pen") isSelecting = true;
     if ((e.buttons == 1 && e.pointerType == "pen" && ['pen', 'pressure', 'highlighter'].includes(currentPen.getAttribute('type'))) || isSelecting) {
         path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
         path.setAttribute("d", `M ${e.offsetX} ${e.offsetY}`);
