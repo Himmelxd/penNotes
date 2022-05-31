@@ -97,6 +97,7 @@ div#txtEditor:focus-visible {
     border-radius: 0px;
     --translate: 0px;
     opacity: 1;
+    min-width: 150px;
 }
 
 #notesBar.hide{
