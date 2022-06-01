@@ -223,7 +223,7 @@ function textEdit(e) {
 follow = null;
 document.onpointermove = move;
 document.onpointerup = (e) => {
-    if(e.pointerType == "pen") mainS.style.cursor = null;
+    if(e.pointerType == "pen" && e.path.includes(mainS)) mainS.style.cursor = null;
     if (e.pointerType != 'pen' && moved < 5) {
         if (e.target.nodeName == 'image') {
             img = e.target;
