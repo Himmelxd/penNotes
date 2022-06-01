@@ -19,6 +19,7 @@ document.onkeydown = (e) => {
 isSelecting = false;
 mainS.onpointerdown = (e) => {
     if (!currentPen) penList.querySelector('.pen').click();
+    if(e.pointerType == "pen") mainS.style.cursor = 'none';
     e.stopPropagation();
     moved = 0;
     if ([2,4].includes(e.buttons) && e.pointerType == "pen") isSelecting = true;
@@ -222,6 +223,7 @@ function textEdit(e) {
 follow = null;
 document.onpointermove = move;
 document.onpointerup = (e) => {
+    if(e.pointerType == "pen") mainS.style.cursor = null;
     if (e.pointerType != 'pen' && moved < 5) {
         if (e.target.nodeName == 'image') {
             img = e.target;
