@@ -77,10 +77,12 @@ penWasUp = true;
 lastP = [0, 0];
 beforeLastP = [0, 0];
 moved = 0;
+var penHasPressure = false;
 
 lastPressure = 0.1;
 currentPath = null;
 mainS.onpointermove = (e) => {
+    if(!penHasPressure && e.pressure && e.pointerType == 'pen') penHasPressure = true; 
     moved += 1;
     if (!currentPen) penList.querySelector('.pen').click();
     if (!follow && imagesToPaste.length) {
@@ -106,7 +108,7 @@ mainS.onpointermove = (e) => {
         cP = [e.offsetX, e.offsetY];
         if (Math.abs(cP[0] - lastP[0]) > minDiff || Math.abs(cP[1] - lastP[1]) > minDiff) {
             e.stopPropagation();
-            if (e.buttons == 1 || isSelecting) {
+            if ((e.buttons == 1 || isSelecting) && !(penHasPressure && !e.pressure)) {
                 path = currentPath;
                 if (currentPen.getAttribute('type') == 'pen' || isSelecting) {
                     path.setAttribute("d", `${path.getAttribute("d")} L${cP[0].toFixed(3)} ${cP[1].toFixed(3)}`);
