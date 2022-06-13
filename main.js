@@ -19,11 +19,11 @@ document.onkeydown = (e) => {
 isSelecting = false;
 mainS.onpointerdown = (e) => {
     if (!currentPen) penList.querySelector('.pen').click();
-    if(e.pointerType == "pen") mainS.style.cursor = 'none';
     e.stopPropagation();
     moved = 0;
     if ([2,4].includes(e.buttons) && e.pointerType == "pen") isSelecting = true;
     if ((e.buttons == 1 && e.pointerType == "pen" && ['pen', 'pressure', 'highlighter'].includes(currentPen.getAttribute('type'))) || isSelecting) {
+        if(e.pointerType == "pen") mainS.classList.add('penDown');
         path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
         path.setAttribute("d", `M ${e.offsetX} ${e.offsetY}`);
         lastPressure = e.pressure;
@@ -187,6 +187,8 @@ mainS.onpointermove = (e) => {
 
             }
         }
+    } else {
+        if(e.pointerType == "pen") mainS.classList.add('penHover');
     }
 }
 
@@ -225,7 +227,7 @@ function textEdit(e) {
 follow = null;
 document.onpointermove = move;
 document.onpointerup = (e) => {
-    if(e.pointerType == "pen" && e.path.includes(mainS)) mainS.style.cursor = null;
+    if(e.pointerType == "pen" && e.path.includes(mainS)) {mainS.classList.remove('penHover');mainS.classList.remove('penDown');};
     if (e.pointerType != 'pen' && moved < 5) {
         if (e.target.nodeName == 'image') {
             img = e.target;
