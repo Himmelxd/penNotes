@@ -227,6 +227,11 @@ div#penList {
     height: 6px;
 }
 
+.hideScroll::-webkit-scrollbar {
+    width: 0px;
+    height: 0px;
+}
+
 *::-webkit-scrollbar-track {
     background: #53535300;
 }

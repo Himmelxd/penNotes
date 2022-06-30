@@ -976,3 +976,17 @@ document.getElementById('toggle-fullscreen').addEventListener('click', (event) =
         document.getElementsByTagName('html')[0].requestFullscreen();
     }
 });
+
+(function(timer) {
+  window.addEventListener('load', function() {
+    document.addEventListener('scroll', function(e) {
+    (function(){
+        document.body.classList.remove('hideScroll')
+      clearTimeout(timer);
+      timer = setTimeout(function() {
+        document.body.classList.add('hideScroll')
+      }, 300);    
+    })();
+    })
+  })
+})();
