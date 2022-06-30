@@ -991,3 +991,6 @@ document.getElementById('toggle-fullscreen').addEventListener('click', (event) =
     })
   })
 })();
+
+// No Context Menu
+document.body.addEventListener("contextmenu", e => e.preventDefault());
