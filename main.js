@@ -977,6 +977,7 @@ document.getElementById('toggle-fullscreen').addEventListener('click', (event) =
     }
 });
 
+// hide scrollbar
 (function(timer) {
   window.addEventListener('load', function() {
     document.addEventListener('scroll', function(e) {
