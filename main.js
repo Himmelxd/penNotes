@@ -19,6 +19,7 @@ document.onkeydown = (e) => {
 isSelecting = false;
 mainS.onpointerdown = (e) => {
     if (!currentPen) penList.querySelector('.pen').click();
+    newContext.classList.add('hide');
     e.stopPropagation();
     moved = 0;
     if ([2,4].includes(e.buttons) && e.pointerType == "pen") isSelecting = true;
@@ -349,6 +350,10 @@ mainS.onpointerup = (e) => {
         selector = mainS.querySelector('.selector');
         for (let el of mainS.querySelectorAll('.selected')) {
             el.classList.remove('selected')
+        }
+
+        if (selector.getBoundingClientRect().height < 10 && selector.getBoundingClientRect().width < 10) {
+            openContext(e.offsetX,e.offsetY);
         }
 
         selection = getElementsCoveredFully(selector);
@@ -994,3 +999,42 @@ document.getElementById('toggle-fullscreen').addEventListener('click', (event) =
 
 // No Context Menu
 document.body.addEventListener("contextmenu", e => e.preventDefault());
+
+// new context
+
+function fillContext() {
+    var pens = penList.querySelectorAll('.pen, .eraser');
+    parentdiv = pensContext;
+    parentdiv.innerHTML = '';
+    var div = 360 / pens.length;
+    var radius = 50;
+    var offsetToParentCenter = parseInt(parentdiv.offsetWidth / 2); //assumes parent is square
+    var offsetToChildCenter = 20;
+    var totalOffset = offsetToParentCenter - offsetToChildCenter;
+    for (let i = 0; i < pens.length; i++) {
+        const pen = pens[i];
+        var childdiv = document.createElement('div');
+        childdiv.style.position = 'absolute';
+        childdiv.style.transform = 'scale(2)';
+        childdiv.innerHTML = pen.outerHTML;
+        childdiv.querySelector('div').style.transform += ' scale(0.5)';
+        childdiv.setAttribute("onclick","");
+        childdiv.onclick = () => {
+            pen.onclick();
+            fillContext();
+        }
+        var y = Math.sin((div * i) * (Math.PI / 180)) * radius;
+        var x = Math.cos((div * i) * (Math.PI / 180)) * radius;
+        var x = Math.cos((div * i) * (Math.PI / 180)) * radius;
+        childdiv.style.top = (y + totalOffset).toString() + "px";
+        childdiv.style.left = (x + totalOffset).toString() + "px";
+        parentdiv.appendChild(childdiv);
+    }
+}
+
+function openContext(x,y) {
+    fillContext();
+    newContext.style.top = y;
+    newContext.style.left = x;
+    newContext.classList.remove('hide');
+}

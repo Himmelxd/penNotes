@@ -386,3 +386,23 @@ div#logContainter {
     cursor: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAoAAAAKCAYAAACNMs+9AAAAAXNSR0IArs4c6QAAAIVJREFUKFNNkAEOgAAIAuH/j7YdUKu2NAVBLUs+SbYS+JBZOgJR5l0l6VG9W9dweHyB6ZhKPMje1NSjc006uiETS4ob64YihxosAzsTFL9dAC8ItRjpuA8lrHTTKvlzXMH63xJBXwRfbMztLrPMHdYOMHZ2nmzUg1Y4ykVR24FX/RlgT54H9uRMGSiWI1MAAAAASUVORK5CYII=') 6 5
 , auto;
 }
+
+#newContext {
+    transform: scale(1);
+    transition: 0.15s transform cubic-bezier(0.25, 0.1, 0.5, 1.69);
+    display: block;
+    position: absolute;
+    height: 0px;
+    width: 0px;
+}
+
+#newContext.hide {
+    transform: scale(0);
+    transition: 0.1s transform cubic-bezier(0.46, 0.03, 0.7, 0.5);
+}
+
+#pensContext > div {
+    border-radius: 100%;
+    backdrop-filter: blur(1px);
+    background-color: #9797971f;
+}
