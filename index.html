@@ -15,6 +15,8 @@
     <meta name="msapplication-config" content="icon/browserconfig.xml">
     <meta name="theme-color" content="#0e2c52">
 
+    <script src="fancy-pen.js"></script>
+
     <script src="store.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/pdfjs-dist@2.13.216/build/pdf.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/pdfjs-dist@2.13.216/build/pdf.worker.min.js"></script>
@@ -49,7 +51,7 @@
     <div id="logContainter"></div>
 
 </div>
-<div id="settingsPane" class="pane hide" style="transform: scale(var(--scale)) translate(calc(100vw - 100% - 100px), 5vh);">
+<div id="settingsPane" class="pane hide" style="transform: scale(var(--scale)) translate(calc(100vw - 100% - 100px), 5vh);user-select: none;">
     <h3>Einstellungen</h3>
     <label>Paper:</label>
     <select oninput="mainS.setAttribute('paper',this.value)">
@@ -57,6 +59,23 @@
         <option value="grid">Grid</option>
         <option value="dots" selected>Dots</option>
     </select>
+
+    <hr>
+    <h3>Fancy-Pen</h3>
+    <label for="fancyHardness">Hardness</label>
+    <br>
+    <input type="range" id="fancyHardness" value="0.5" min="0" max="1" step="0.05">
+    <br>
+
+    <label for="fancySmoothing">Smoothing</label>
+    <br>
+    <input type="range" id="fancySmoothing" value="0.2" min="0" max="1" step="0.05">
+    <br>
+
+    <label for="fancyStreamline">Straightening</label>
+    <br>
+    <input type="range" id="fancyStreamline" value="0.1" min="0" max="1" step="0.05">
+    <br>
 </div>
 
 <div id="penEditor" class="hide">
@@ -79,6 +98,11 @@
     <div class="penType" type="pressure" onclick="setCurrentPenType(this.getAttribute('type'))">
         <svg style="width:24px;height:24px" viewBox="0 0 24 24">
             <path fill="currentColor" d="M 9.75 20.85 C 11.53 20.15 10.915 18.665 9.721 17.268 C 8.392 15.893 7.828 15.195 6.634 14.113 C 6 13.5 5.19 12.8 4.54 12 C 4.26 11.67 3.69 11.06 4.27 10.94 C 4.86 10.82 5.88 11.4 6.4 11.62 C 7.31 12 8.031 12.739 8.955 13.325 L 10.239 11.027 C 8.5 10.23 6.5 9.32 4.64 9.05 C 3.58 8.89 2.46 9.11 2.1 10.26 C 1.78 11.25 2.083 12.243 2.87 13.03 C 4.809 14.722 6.003 15.713 7.242 16.614 C 8.256 17.471 8.527 17.628 9.203 18.192 C 9.788 18.665 10.104 19.318 9.608 19.634 C 8.617 20.062 3.975 17.471 4 18 L 4 18 C 4.02 18.665 7.88 21.47 9.75 20.85 M 18.96 7.33 L 13.29 13 H 11 V 10.71 L 16.67 5.03 L 18.96 7.33 M 22.36 6.55 C 22.35 6.85 22.04 7.16 21.72 7.47 L 19.2 10 L 18.33 9.13 L 20.93 6.54 L 20.34 5.95 L 19.67 6.62 L 17.38 4.33 L 19.53 2.18 C 19.77 1.94 20.16 1.94 20.39 2.18 L 21.82 3.61 C 22.06 3.83 22.06 4.23 21.82 4.47 C 21.61 4.68 21.41 4.88 21.41 5.08 C 21.39 5.28 21.59 5.5 21.79 5.67 C 22.08 5.97 22.37 6.25 22.36 6.55 Z" />
+        </svg>
+    </div>
+    <div class="penType" type="fancy" onclick="setCurrentPenType(this.getAttribute('type'))">
+        <svg style="width:24px;height:24px" viewBox="0 0 24 24">
+            <path fill="currentColor" d="M 9.75 20.85 C 11.53 20.15 10.915 18.665 9.721 17.268 C 8.392 15.893 7.828 15.195 6.634 14.113 C 6 13.5 5.19 12.8 4.54 12 C 4.26 11.67 3.69 11.06 4.27 10.94 C 4.86 10.82 5.88 11.4 6.4 11.62 C 7.31 12 8.031 12.739 8.955 13.325 L 10.239 11.027 C 8.5 10.23 6.5 9.32 4.64 9.05 C 3.58 8.89 2.46 9.11 2.1 10.26 C 1.78 11.25 2.083 12.243 2.87 13.03 C 4.809 14.722 6.003 15.713 7.242 16.614 C 8.256 17.471 8.527 17.628 9.203 18.192 C 9.788 18.665 10.104 19.318 9.608 19.634 C 8.617 20.062 3.975 17.471 4 18 L 4 18 C 4.02 18.665 7.88 21.47 9.75 20.85 M 18.96 7.33 L 13.29 13 H 11 V 10.71 L 16.67 5.03 L 18.96 7.33 M 22.36 6.55 C 22.35 6.85 22.04 7.16 21.72 7.47 L 19.2 10 L 18.33 9.13 L 20.93 6.54 L 20.34 5.95 L 19.67 6.62 L 17.38 4.33 L 19.53 2.18 C 19.77 1.94 20.16 1.94 20.39 2.18 L 21.82 3.61 C 22.06 3.83 22.06 4.23 21.82 4.47 C 21.61 4.68 21.41 4.88 21.41 5.08 C 21.39 5.28 21.59 5.5 21.79 5.67 C 22.08 5.97 22.37 6.25 22.36 6.55 Z M 7 4 L 8 4 L 8 3 L 9 4 L 10 3 L 10 4 L 11 4 L 10 5 L 11 6 L 10 6 L 10 7 L 9 6 L 8 7 L 8 6 L 7 6 L 8 5 L 7 4" />
         </svg>
     </div>
 </div>

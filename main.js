@@ -19,11 +19,12 @@ document.onkeydown = (e) => {
 isSelecting = false;
 mainS.onpointerdown = (e) => {
     if (!currentPen) penList.querySelector('.pen').click();
+    currentLine = [];
     newContext.classList.add('hide');
     e.stopPropagation();
     moved = 0;
     if ([2,4].includes(e.buttons) && e.pointerType == "pen") isSelecting = true;
-    if ((e.buttons == 1 && e.pointerType == "pen" && ['pen', 'pressure', 'highlighter'].includes(currentPen.getAttribute('type'))) || isSelecting) {
+    if ((e.buttons == 1 && e.pointerType == "pen" && ['pen', 'pressure', 'highlighter','fancy'].includes(currentPen.getAttribute('type'))) || isSelecting) {
         if(e.pointerType == "pen") mainS.classList.add('penDown');
         path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
         path.setAttribute("d", `M ${e.offsetX} ${e.offsetY}`);
@@ -49,6 +50,9 @@ mainS.onpointerdown = (e) => {
                 path.style.strokeWidth = currentPen.getAttribute('size') * 8;
                 path.style.mixBlendMode = 'multiply';
                 path.style.strokeLinecap = 'square';
+                break;
+            case 'fancy':
+                path.style.fill = currentPen.getAttribute('color');
                 break;
             default:
                 break;
@@ -105,7 +109,7 @@ mainS.onpointermove = (e) => {
             }
         }
 
-    } else if ((e.pointerType == 'pen' && ['pen', 'pressure', 'highlighter'].includes(currentPen.getAttribute('type'))) || isSelecting) {
+    } else if ((e.pointerType == 'pen' && ['pen', 'pressure', 'highlighter','fancy'].includes(currentPen.getAttribute('type'))) || isSelecting) {
         cP = [e.offsetX, e.offsetY];
         if (Math.abs(cP[0] - lastP[0]) > minDiff || Math.abs(cP[1] - lastP[1]) > minDiff) {
             e.stopPropagation();
@@ -179,7 +183,16 @@ mainS.onpointermove = (e) => {
                         teRV = [tRV[0] / btRV, tRV[1] / btRV];
                         bSn = [(bPs[0] - (teRV[0] * bShortSideS * 0.3)).toFixed(2), (bPs[1] - (teRV[1] * bShortSideS * 0.3)).toFixed(2)];
                         path.setAttribute("d", `M${p1[0]} ${p1[1]} S${bSn.join(" ")} ${parseFloat(bPs[0]).toFixed(2)} ${parseFloat(bPs[1]).toFixed(2)} ${path.getAttribute("d").replaceAll('Z', '').split("L").slice(0, path.getAttribute("d").includes('L') ? -1 : 1).join("L").split(" ").slice(2).join(" ")} S${bEp.join(" ")} ${parseFloat(bPe[0]).toFixed(2)} ${parseFloat(bPe[1]).toFixed(2)} L${p2[0]} ${p2[1]} Z`);
-                    }
+                   }
+                } else if (currentPen.getAttribute('type') == 'fancy') {
+                    currentLine.push([cP[0],cP[1],e.pressure]);
+                    path.setAttribute("d", getSvgPathFromStroke(getStroke(currentLine,{
+                        simulatePressure: false,
+                        size: currentPen.getAttribute('size'),
+                        thinning: fancyHardness.max-fancyHardness.value,
+                        smoothing: fancySmoothing.value,
+                        streamline: fancyStreamline.value
+                      })));
                 }
                 lastPressure = e.pressure;
 
@@ -225,6 +238,7 @@ function textEdit(e) {
     }
 }
 
+var currentLine;
 follow = null;
 document.onpointermove = move;
 document.onpointerup = (e) => {
@@ -680,6 +694,9 @@ function setPenElement(element, color, size, type) {
             break;
         case 'pressure':
             svgD = `M 9.75 20.85 C 11.53 20.15 10.915 18.665 9.721 17.268 C 8.392 15.893 7.828 15.195 6.634 14.113 C 6 13.5 5.19 12.8 4.54 12 C 4.26 11.67 3.69 11.06 4.27 10.94 C 4.86 10.82 5.88 11.4 6.4 11.62 C 7.31 12 8.031 12.739 8.955 13.325 L 10.239 11.027 C 8.5 10.23 6.5 9.32 4.64 9.05 C 3.58 8.89 2.46 9.11 2.1 10.26 C 1.78 11.25 2.083 12.243 2.87 13.03 C 4.809 14.722 6.003 15.713 7.242 16.614 C 8.256 17.471 8.527 17.628 9.203 18.192 C 9.788 18.665 10.104 19.318 9.608 19.634 C 8.617 20.062 3.975 17.471 4 18 L 4 18 C 4.02 18.665 7.88 21.47 9.75 20.85 M 18.96 7.33 L 13.29 13 H 11 V 10.71 L 16.67 5.03 L 18.96 7.33 M 22.36 6.55 C 22.35 6.85 22.04 7.16 21.72 7.47 L 19.2 10 L 18.33 9.13 L 20.93 6.54 L 20.34 5.95 L 19.67 6.62 L 17.38 4.33 L 19.53 2.18 C 19.77 1.94 20.16 1.94 20.39 2.18 L 21.82 3.61 C 22.06 3.83 22.06 4.23 21.82 4.47 C 21.61 4.68 21.41 4.88 21.41 5.08 C 21.39 5.28 21.59 5.5 21.79 5.67 C 22.08 5.97 22.37 6.25 22.36 6.55 Z`;
+            break;
+        case 'fancy':
+            svgD = `M 9.75 20.85 C 11.53 20.15 10.915 18.665 9.721 17.268 C 8.392 15.893 7.828 15.195 6.634 14.113 C 6 13.5 5.19 12.8 4.54 12 C 4.26 11.67 3.69 11.06 4.27 10.94 C 4.86 10.82 5.88 11.4 6.4 11.62 C 7.31 12 8.031 12.739 8.955 13.325 L 10.239 11.027 C 8.5 10.23 6.5 9.32 4.64 9.05 C 3.58 8.89 2.46 9.11 2.1 10.26 C 1.78 11.25 2.083 12.243 2.87 13.03 C 4.809 14.722 6.003 15.713 7.242 16.614 C 8.256 17.471 8.527 17.628 9.203 18.192 C 9.788 18.665 10.104 19.318 9.608 19.634 C 8.617 20.062 3.975 17.471 4 18 L 4 18 C 4.02 18.665 7.88 21.47 9.75 20.85 M 18.96 7.33 L 13.29 13 H 11 V 10.71 L 16.67 5.03 L 18.96 7.33 M 22.36 6.55 C 22.35 6.85 22.04 7.16 21.72 7.47 L 19.2 10 L 18.33 9.13 L 20.93 6.54 L 20.34 5.95 L 19.67 6.62 L 17.38 4.33 L 19.53 2.18 C 19.77 1.94 20.16 1.94 20.39 2.18 L 21.82 3.61 C 22.06 3.83 22.06 4.23 21.82 4.47 C 21.61 4.68 21.41 4.88 21.41 5.08 C 21.39 5.28 21.59 5.5 21.79 5.67 C 22.08 5.97 22.37 6.25 22.36 6.55 Z M 7 4 L 8 4 L 8 3 L 9 4 L 10 3 L 10 4 L 11 4 L 10 5 L 11 6 L 10 6 L 10 7 L 9 6 L 8 7 L 8 6 L 7 6 L 8 5 L 7 4`;
             break;
 
         default:
