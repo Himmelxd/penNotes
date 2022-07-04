@@ -83,6 +83,7 @@ lastP = [0, 0];
 beforeLastP = [0, 0];
 moved = 0;
 var penHasPressure = false;
+var lastDot = false;
 
 lastPressure = 0.1;
 currentPath = null;
@@ -260,6 +261,21 @@ document.onpointerup = (e) => {
         } else {
             if (!imageEditPoints.classList.contains('hide')) imageEditPoints.classList.add('hide');
         }
+    }
+    if(moved < 6) {
+        if(lastDot && Math.abs(e.offsetX - lastDot[0]) < 10 && Math.abs(e.offsetY  - lastDot[1]) < 10 ){
+            if(lastDot[2] != null){
+                mainS.lastChild.remove();
+                lastDot[2].remove();
+            }
+            setTimeout(() => {
+                openContext(e.offsetX,e.offsetY);
+            }, 10);
+        }
+        var drawn = (getElementsInRegion(e.offsetX-1, e.offsetY-1, 2, 2, 0.3)).includes(mainS.lastChild);
+        lastDot = [e.offsetX,e.offsetY,drawn?mainS.lastChild:null];
+    } else {
+        lastDot = false;
     }
     if (follow && follow.nodeName == 'IMG') {
         img = document.createElementNS('http://www.w3.org/2000/svg', 'image');
@@ -547,7 +563,7 @@ async function save2File(data=mainS.innerHTML) {
 // }
 
 
-function getElementsInRegion(x, y, width, height) {
+function getElementsInRegion(x, y, width, height, p = 5) {
 
     var elements = [],
         cx = x,
@@ -557,9 +573,9 @@ function getElementsInRegion(x, y, width, height) {
     height = y + height;
     width = x + width;
 
-    while ((cy += 5) < height) {
+    while ((cy += p) < height) {
         cx = x;
-        while ((cx += 5) < width) {
+        while ((cx += p) < width) {
             curEl = document.elementFromPoint(cx, cy);
             if (curEl && !elements.includes(curEl)) {
                 elements.push(curEl);
