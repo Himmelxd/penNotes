@@ -84,10 +84,12 @@ beforeLastP = [0, 0];
 moved = 0;
 var penHasPressure = false;
 var lastDot = false;
+var startedOnCanvas = false;
 
 lastPressure = 0.1;
 currentPath = null;
 mainS.onpointermove = (e) => {
+    if(!startedOnCanvas) return;
     if(!penHasPressure && e.pressure && e.pointerType == 'pen') penHasPressure = true; 
     moved += 1;
     if (!currentPen) penList.querySelector('.pen').click();
@@ -425,6 +427,7 @@ setInterval(() => {
 
 dontScrollByPointer = false;
 document.body.addEventListener("pointerdown", function (e) {
+    startedOnCanvas = e.path.includes(mainS);
     if (e.pointerType === "pen" || e.path.includes(imageEditPoints) || e.path.includes(selEditPoints) || e.path.includes(txtEditorWrap)) {
         dontScrollByPointer = true;
     } else {
