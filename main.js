@@ -264,7 +264,7 @@ document.onpointerup = (e) => {
             if (!imageEditPoints.classList.contains('hide')) imageEditPoints.classList.add('hide');
         }
     }
-    if(moved < 6) {
+    if(moved < 1) {
         if(lastDot && Math.abs(e.offsetX - lastDot[0]) < 10 && Math.abs(e.offsetY  - lastDot[1]) < 10 ){
             if(lastDot[2] != null){
                 mainS.lastChild.remove();
